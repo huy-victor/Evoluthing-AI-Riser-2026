@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Resolution Test — Evoluthing</title>
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:
+    radial-gradient(1200px 700px at 50% 30%, rgba(255,220,160,.10), transparent 60%),
+    linear-gradient(160deg,#3a2c22 0%,#241a14 55%,#171009 100%);
+  font-family:Inter,system-ui,sans-serif;
+  display:flex;flex-direction:column;height:100vh;padding:14px;gap:10px;
+}
+h2{color:#e8c98a;font-family:"Playfair Display",serif;margin:0;font-size:20px;text-align:center}
+.sub{color:#b8a894;font-size:12.5px;text-align:center;line-height:1.45}
+.sub code{background:rgba(255,255,255,.1);padding:1px 6px;border-radius:6px;color:#e8c98a}
+.bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;align-items:center}
+.rbtn{font-family:Inter,sans-serif;font-size:13px;font-weight:600;background:#3b3226;color:#e8d8bd;border:1px solid rgba(255,255,255,.14);border-radius:9px;padding:7px 12px;cursor:pointer}
+.rbtn:hover{background:#543c28}
+.rbtn.active{background:#6b442b;border-color:#e8c98a;color:#ffe9c2}
+.custom{display:flex;gap:6px;align-items:center;color:#b8a894;font-size:12.5px}
+.custom input{width:64px;padding:6px 8px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226;font-family:Inter,sans-serif;font-size:13px}
+.stage{flex:1;position:relative;display:grid;place-items:center;overflow:hidden;border:1px solid rgba(255,255,255,.10);border-radius:12px;background:rgba(0,0,0,.25)}
+.frame-wrap{position:relative;box-shadow:0 30px 70px rgba(0,0,0,.55);border-radius:6px;overflow:hidden;border:1px solid rgba(255,255,255,.18)}
+.frame-wrap iframe{border:none;display:block;background:#241a14}
+.frame-label{position:absolute;top:-26px;left:0;color:#e8c98a;font-size:12.5px;white-space:nowrap}
+</style>
+</head>
+<body>
+  <h2>Resolution Test — xem sổ trên các độ phân giải máy tính</h2>
+  <div class="sub">
+    Sổ chạy thật trong khung Thu nhỏ đúng kích thước màn chọn. Chỉnh gì trong sổ cũng bình thường (gõ topic, lật trang, đổi ngôn ngữ...).
+    <code>1366×640</code> = laptop màn 768 mở trình duyệt thật (khung bị thanh công cụ chiếm mất ~130px). Mobile để sau, chưa thuộc phạm vi trang này.
+  </div>
+  <div class="bar" id="presetBar"></div>
+  <div class="custom">
+    Tùy chỉnh: <input type="number" id="cw" value="1600" min="600" max="3840"> ×
+    <input type="number" id="ch" value="900" min="400" max="2160">
+    <button class="rbtn" id="btnCustom">Áp dụng</button>
+  </div>
+  <div class="stage" id="stage">
+    <div class="frame-wrap" id="frameWrap">
+      <div class="frame-label" id="frameLabel"></div>
+      <iframe id="frame" src="/" title="Evoluthing"></iframe>
+    </div>
+  </div>
+
+<script>
+const $ = id => document.getElementById(id);
+const PRESETS = [
+  [3440, 1440, 'Ultrawide'],
+  [2560, 1440, '2K QHD'],
+  [1920, 1080, 'Full HD phổ biến nhất'],
+  [1600, 900, 'HD+'],
+  [1536, 864, 'Full HD scale 125%'],
+  [1440, 900, 'MacBook 16:10'],
+  [1366, 768, 'Laptop cũ phổ thông'],
+  [1366, 640, 'Laptop 768 + trình duyệt'],
+  [1280, 720, 'HD nhỏ']
+];
+let cur = [1920, 1080];
+
+function fitScale(w, h){
+  const stage = $('stage');
+  const availW = stage.clientWidth - 36, availH = stage.clientHeight - 36;
+  return Math.min(availW / w, availH / h, 1);
+}
+function apply(w, h){
+  cur = [w, h];
+  const scale = fitScale(w, h);
+  const frame = $('frame'), wrap = $('frameWrap');
+  frame.style.width = w + 'px';
+  frame.style.height = h + 'px';
+  wrap.style.transform = 'scale(' + scale + ')';
+  // transform không đổi layout box — dùng margin âm để căn giữa đúng
+  wrap.style.marginLeft = (-(w * (1 - scale)) / 2) + 'px';
+  wrap.style.marginTop = (-(h * (1 - scale)) / 2) + 'px';
+  const pct = Math.round(scale * 100);
+  $('frameLabel').textContent = w + ' × ' + h + (pct < 100 ? '  (đang xem ' + pct + '% kích thước thật)' : '  (kích thước thật 100%)');
+  document.querySelectorAll('.rbtn').forEach(b => {
+    b.classList.toggle('active', b.dataset.w == w && b.dataset.h == h);
+  });
+}
+PRESETS.forEach(([w, h, note]) => {
+  const b = document.createElement('button');
+  b.className = 'rbtn';
+  b.dataset.w = w; b.dataset.h = h;
+  b.textContent = w + '×' + h + (note ? ' — ' + note : '');
+  b.addEventListener('click', () => apply(w, h));
+  $('presetBar').appendChild(b);
+});
+$('btnCustom').addEventListener('click', () => {
+  const w = Math.max(600, Math.min(3840, parseInt($('cw').value) || 1600));
+  const h = Math.max(400, Math.min(2160, parseInt($('ch').value) || 900));
+  apply(w, h);
+});
+window.addEventListener('resize', () => apply(cur[0], cur[1]));
+apply(1920, 1080);
+console.log('[ResolutionTest] ready');
+</script>
+</body>
+</html>

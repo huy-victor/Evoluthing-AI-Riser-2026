@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cover Preview — Evoluthing bilingual</title>
+<link href="https://fonts.googleapis.com/css2?family=Fuzzy+Bubbles:wght@400;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:
+    radial-gradient(1200px 700px at 50% 30%, rgba(255,220,160,.10), transparent 60%),
+    radial-gradient(900px 600px at 78% 82%, rgba(120,70,40,.16), transparent 62%),
+    linear-gradient(160deg,#3a2c22 0%,#241a14 55%,#171009 100%);
+  font-family:Inter,system-ui,sans-serif;
+  display:flex;flex-direction:column;align-items:center;gap:16px;padding:18px;min-height:100vh;
+}
+h2{color:#e8c98a;font-family:"Playfair Display",serif;margin:0;text-align:center}
+.sub{color:#b8a894;font-size:13px;text-align:center;max-width:900px;line-height:1.5}
+.sub code{background:rgba(255,255,255,.1);padding:1px 6px;border-radius:6px;color:#e8c98a}
+.layout{display:flex;gap:18px;align-items:flex-start;justify-content:center;width:100%;max-width:1400px}
+.controls{display:flex;flex-direction:column;gap:12px;background:rgba(0,0,0,.22);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);width:360px;flex-shrink:0;position:sticky;top:18px;max-height:calc(100vh - 36px);overflow-y:auto}
+.controls label{color:#e8c98a;font-size:13px;font-weight:600}
+.ctrl-group{background:rgba(255,255,255,.07);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.10);display:flex;flex-direction:column;gap:7px}
+.ctrl-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.ctrl-row span.lbl{color:#cbbba2;font-size:12px;min-width:96px}
+.badge{font-size:12px;padding:5px 9px;border-radius:999px;background:#fdfaf3;color:#5a4632;border:1px solid #c9b99a;display:inline-block}
+.btn{font-family:Inter,sans-serif;font-weight:700;background:#6b442b;color:#fdfaf3;border:none;border-radius:10px;padding:9px 16px;cursor:pointer}
+.btn:hover{background:#54331e}
+.btn.secondary{background:#3b3226}
+input[type=radio]{accent-color:#b57a3f;cursor:pointer}
+input[type=checkbox]{accent-color:#b57a3f;cursor:pointer}
+input[type=range]{accent-color:#b57a3f;flex:1}
+input[type=color]{width:42px;height:30px;padding:2px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;cursor:pointer}
+input[type=text].ctrl-input{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226;font-family:"Fuzzy Bubbles",cursive;font-size:15px;-webkit-text-stroke:.45px currentColor}
+.radios{display:flex;gap:12px;flex-wrap:wrap;color:#e6d7bd;font-size:13px}
+.radios label{display:flex;align-items:center;gap:5px;font-weight:400;color:#e6d7bd;cursor:pointer}
+.ctrl-row .val{color:#e6d7bd;font-size:12px;width:30px;text-align:right}
+
+/* ===== closed-book replica (index.html 640x820, scale to fit) ===== */
+:root{--s:1}
+.stage{flex:1;display:flex;flex-direction:column;align-items:center;gap:14px;min-width:0;padding-top:6px}
+.book-outer{position:relative;width:calc(640px*var(--s));height:calc(820px*var(--s))}
+.book{position:absolute;left:0;top:0;width:640px;height:820px;perspective:2400px;filter:drop-shadow(0 40px 60px rgba(0,0,0,.55));
+  transform:scale(var(--s));transform-origin:top left;}
+.cover{position:absolute;inset:0;border-radius:8px 14px 14px 8px;overflow:hidden;cursor:pointer;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.25), inset 0 0 60px rgba(0,0,0,.30);}
+.cover-layer{position:absolute;inset:0;transition:opacity .35s ease}
+.cover .spine{position:absolute;left:0;top:0;bottom:0;width:34px;z-index:2;box-shadow:inset -3px 0 6px rgba(0,0,0,.35)}
+.cover .inner{position:absolute;top:0;left:34px;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 40px;text-align:center;z-index:3;pointer-events:none}
+.cover .frame{position:absolute;inset:22px;border:2px solid rgba(232,201,138,.32);border-radius:4px;pointer-events:none;z-index:3;transition:border-color .35s ease}
+.cover h1{font-family:"Playfair Display",Georgia,serif;font-weight:800;font-size:54px;letter-spacing:.02em;margin:0;text-shadow:0 2px 0 rgba(0,0,0,.35);transition:color .35s ease;position:relative;z-index:4;paint-order:stroke fill}
+.cover .tag{font-family:"Fuzzy Bubbles",cursive;font-size:24px;-webkit-text-stroke:.7px currentColor;margin-top:10px;opacity:.92;transition:color .35s ease;position:relative;z-index:4;paint-order:stroke fill}
+.clasp{position:absolute;right:-6px;top:44%;width:44px;height:64px;background:linear-gradient(90deg,#4a3423,#6b4c33);border:2px solid rgba(0,0,0,.3);border-radius:6px;display:grid;place-items:center;z-index:11;box-shadow:0 4px 10px rgba(0,0,0,.35);animation:invite 2.4s ease-in-out infinite}
+.clasp .knob{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e8c98a,#9a7b45 70%,#6f5830);box-shadow:inset 0 2px 3px rgba(0,0,0,.4)}
+@keyframes invite{0%,100%{box-shadow:0 4px 10px rgba(0,0,0,.35)}50%{box-shadow:0 4px 18px rgba(232,201,138,.55)}}
+
+/* ===== decoration layer — single overlay from Bo's Photoshop sheet ===== */
+.deco-layer{position:absolute;z-index:3;pointer-events:none}
+
+/* ===== ribbon bookmarks — the language switch ===== */
+.ribbons{position:absolute;top:0;z-index:12;display:flex}
+.ribbon{position:relative;cursor:pointer;overflow:hidden;
+  transition:height .22s ease, filter .22s ease;
+  box-shadow:0 2px 6px rgba(0,0,0,.4);
+  clip-path:polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 11px), 0 100%);}
+.ribbon:hover{filter:brightness(1.08)}
+.rb-inner{position:absolute;clip-path:polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 11px), 0 100%)}
+.rb-inner .bg{position:absolute;inset:0;width:100%;height:100%}
+.rb-inner .star{position:absolute;left:50%;top:50%;bottom:auto;transform:translate(-50%,-50%);width:58%;height:auto;filter:drop-shadow(0 1px 1px rgba(0,0,0,.25))}
+.ribbon.active{z-index:13}
+
+.hint{color:#b8a894;font-size:12.5px;text-align:center;max-width:660px;line-height:1.6}
+.hint b{color:#e8c98a}
+</style>
+</head>
+<body>
+<h2>Cover Preview — Ribbon đổi ngôn ngữ + lớp trang trí (1 overlay)</h2>
+<div class="sub">Bấm vào <b>ribbon của ngôn ngữ kia</b> để xem hiệu ứng kéo xuống + đổi bìa. Chỉnh các tuỳ chọn bên trái (lớp trang trí áp chung 2 ngôn ngữ) rồi bấm <code>Copy config</code> gửi lại anh Tư Huy.</div>
+<div class="layout">
+  <div class="controls">
+    <div class="ctrl-group">
+      <label>Xem ngôn ngữ</label>
+      <div class="radios">
+        <label><input type="radio" name="viewLang" value="vi" checked> Tiếng Việt (bìa đỏ / chữ vàng)</label>
+        <label><input type="radio" name="viewLang" value="en"> English (navy / chữ đỏ cờ Anh)</label>
+      </div>
+    </div>
+
+    <div class="ctrl-group">
+      <label>Ribbon — kiểu dáng &amp; vị trí</label>
+      <div class="ctrl-row"><span class="lbl">Vị trí ngang</span><input type="range" id="rbLeft" min="0" max="160" step="2" value="18"><span class="val" id="rbLeftVal">18</span></div>
+      <div class="ctrl-row"><span class="lbl">Cách nhau</span><input type="range" id="rbGap" min="0" max="24" step="1" value="6"><span class="val" id="rbGapVal">6</span></div>
+      <div class="ctrl-row"><span class="lbl">Độ rộng</span><input type="range" id="rbWidth" min="24" max="56" step="2" value="34"><span class="val" id="rbWidthVal">34</span></div>
+      <div class="ctrl-row"><span class="lbl">Dài (đang dùng)</span><input type="range" id="rbActive" min="60" max="180" step="2" value="104"><span class="val" id="rbActiveVal">104</span></div>
+      <div class="ctrl-row"><span class="lbl">Ngắn (khi nghỉ)</span><input type="range" id="rbIdle" min="40" max="140" step="2" value="72"><span class="val" id="rbIdleVal">72</span></div>
+    </div>
+
+    <div class="ctrl-group">
+      <label>Viền bao quanh ribbon</label>
+      <div class="ctrl-row"><span class="lbl">Độ dày</span><input type="range" id="rbBorderW" min="0" max="6" step="1" value="2"><span class="val" id="rbBorderWVal">2</span></div>
+      <div class="ctrl-row"><span class="lbl">Màu viền</span><input type="color" id="rbBorderColor" value="#f5f2ea"><span style="color:#cbbba2;font-size:12px" id="rbBorderColorHex">#f5f2ea</span></div>
+    </div>
+
+    <div class="ctrl-group">
+      <label>Bìa tiếng Việt</label>
+      <div class="radios">
+        <label><input type="radio" name="vnPalette" value="flag" checked> Đỏ cờ</label>
+        <label><input type="radio" name="vnPalette" value="oxblood"> Đỏ trầm</label>
+      </div>
+      <div class="ctrl-row"><span class="lbl">Màu bìa</span><input type="color" id="vnCover" value="#8f251c"><span style="color:#cbbba2;font-size:12px" id="vnCoverHex">#8f251c</span></div>
+      <div class="ctrl-row"><span class="lbl">Màu chữ</span><input type="color" id="vnTitle" value="#f6c94a"><span style="color:#cbbba2;font-size:12px" id="vnTitleHex">#f6c94a</span></div>
+      <div class="ctrl-row"><span class="lbl">Màu viền khung</span><input type="color" id="vnFrame" value="#f6c94a"><span style="color:#cbbba2;font-size:12px" id="vnFrameHex">#f6c94a</span></div>
+    </div>
+
+    <div class="ctrl-group">
+      <label>Bìa English</label>
+      <div class="radios">
+        <label><input type="radio" name="enPalette" value="union" checked> Navy Union</label>
+        <label><input type="radio" name="enPalette" value="deep"> Navy đậm</label>
+        <label><input type="radio" name="enPalette" value="denim"> Navy nhạt</label>
+      </div>
+      <div class="ctrl-row"><span class="lbl">Màu bìa</span><input type="color" id="enCover" value="#243052"><span style="color:#cbbba2;font-size:12px" id="enCoverHex">#243052</span></div>
+      <div class="ctrl-row"><span class="lbl">Màu chữ</span><input type="color" id="enTitle" value="#C8102E"><span style="color:#cbbba2;font-size:12px" id="enTitleHex">#C8102E</span></div>
+      <div class="ctrl-row"><span class="lbl">Màu viền khung</span><input type="color" id="enFrame" value="#C8102E"><span style="color:#cbbba2;font-size:12px" id="enFrameHex">#C8102E</span></div>
+    </div>
+
+    <div class="ctrl-group">
+      <label>Dòng chữ phụ dưới tiêu đề</label>
+      <div class="ctrl-row" style="flex-direction:column;align-items:stretch;gap:6px">
+        <input type="text" class="ctrl-input" id="subtitleVN" value="Vạn vật tiến hoá thế nào?">
+        <input type="text" class="ctrl-input" id="subtitleEN" value="How things evolution?">
+      </div>
+    </div>
+
+    <div class="ctrl-group">
+      <label>Viền chữ trên bìa (title + dòng phụ)</label>
+      <div class="ctrl-row"><span class="lbl">VI độ dày</span><input type="range" id="stWvi" min="0" max="5" step="0.5" value="0"><span class="val" id="stWviVal">0</span></div>
+      <div class="ctrl-row"><span class="lbl">VI màu viền</span><input type="color" id="stCvi" value="#741d15"><span style="color:#cbbba2;font-size:12px" id="stCviHex">#741d15</span></div>
+      <div class="ctrl-row"><span class="lbl">EN độ dày</span><input type="range" id="stWen" min="0" max="5" step="0.5" value="1"><span class="val" id="stWenVal">1</span></div>
+      <div class="ctrl-row"><span class="lbl">EN màu viền</span><input type="color" id="stCen" value="#f5f2ea"><span style="color:#cbbba2;font-size:12px" id="stCenHex">#f5f2ea</span></div>
+    </div>
+
+    <div class="ctrl-group">
+      <label>Khung viền trang trí trên bìa</label>
+      <div class="radios">
+        <label><input type="checkbox" id="frameVisible"> Giữ khung viền mảnh (Bo đã bỏ khung)</label>
+      </div>
+      <div class="ctrl-row"><span class="lbl">Lề khung</span><input type="range" id="frameInset" min="0" max="60" step="1" value="22"><span class="val" id="frameInsetVal">22</span></div>
+      <div class="ctrl-row"><span class="lbl">Độ dày viền</span><input type="range" id="frameWidth" min="0" max="6" step="1" value="2"><span class="val" id="frameWidthVal">2</span></div>
+    </div>
+
+    <div class="ctrl-group">
+      <label>Trang trí bìa — 1 lớp duy nhất (sheet Photoshop của Bo)</label>
+      <div class="radios">
+        <label><input type="checkbox" id="decorOn" checked> Bật lớp trang trí</label>
+      </div>
+      <div class="ctrl-row"><span class="lbl">Lệch ngang X</span><input type="range" id="dx" min="-320" max="320" step="1" value="44"><span class="val" id="dxVal">44</span></div>
+      <div class="ctrl-row"><span class="lbl">Lệch dọc Y</span><input type="range" id="dy" min="-320" max="320" step="1" value="26"><span class="val" id="dyVal">26</span></div>
+      <div class="ctrl-row"><span class="lbl">Độ rộng</span><input type="range" id="dwPct" min="40" max="130" step="1" value="89"><span class="val" id="dwPctVal">89</span></div>
+      <div class="ctrl-row"><span class="lbl">Độ mờ</span><input type="range" id="dOpacity" min="10" max="100" step="1" value="85"><span class="val" id="dOpacityVal">85</span></div>
+      <div class="hint" style="text-align:left">Lớp này áp chung cho cả 2 ngôn ngữ. Ưng rồi thì bấm Copy config gửi anh Tư Huy để đồng bộ lên bìa thật.</div>
+    </div>
+
+    <div class="ctrl-row" style="gap:8px">
+      <button class="btn" id="btnCopy">Copy config</button>
+      <button class="btn secondary" id="btnReset">Đặt lại mặc định</button>
+    </div>
+    <div id="copyOk" class="badge" style="display:none">Đã copy — dán gửi anh Tư Huy!</div>
+  </div>
+
+  <div class="stage">
+    <div class="book-outer">
+     <div class="book">
+      <div class="cover" id="cover">
+        <div class="cover-layer" id="layerVI"></div>
+        <div class="cover-layer" id="layerEN" style="opacity:0"></div>
+        <div class="spine" id="spine"></div>
+        <div class="frame" id="frame"></div>
+        <img class="deco-layer" id="decoLayer" src="../assets/doodles/decoration-cover.png" alt="">
+        <div class="inner">
+          <h1 id="titleEl">Evoluthing</h1>
+          <div class="tag" id="tagEl">Vạn vật tiến hoá thế nào?</div>
+        </div>
+        <div class="ribbons" id="ribbons"></div>
+        <div class="clasp"><div class="knob"></div></div>
+      </div>
+     </div>
+    </div>
+    <div class="hint">
+      Thiết kế: <b>hai dải ruy băng làm gút sách (bookmark)</b> thòng từ mép trên bìa — ribbon đỏ sao vàng cho tiếng Việt,
+      ribbon hoạ tiết cờ Anh cho English. Ribbon của ngôn ngữ đang dùng <b>thõng dài hơn</b>, ribbon còn lại thụt lên ngắn;
+      <b>hover thì kéo xuống chút, bấm thì kéo hẳn xuống và đổi ngôn ngữ</b>. Bấm phần còn lại của bìa vẫn mở sổ như bình thường.
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------- palettes ---------- */
+const PALETTES = {
+  vi: {
+    flag:    { name:'Đỏ cờ',   base:'#8f251c', bg:'linear-gradient(120deg,#b02f24 0%,#8f251c 45%,#741d15 100%)', spine:'linear-gradient(90deg,#3a120d,#5e2015 60%,#471710)' },
+    oxblood: { name:'Đỏ trầm', base:'#78231b', bg:'linear-gradient(120deg,#8e2f26 0%,#78231b 45%,#5f1a13 100%)', spine:'linear-gradient(90deg,#2c0e0a,#4c1a12 60%,#3a140e)' }
+  },
+  en: {
+    union: { name:'Navy Union', base:'#243052', bg:'linear-gradient(120deg,#2c3a63 0%,#243052 45%,#1b2440 100%)', spine:'linear-gradient(90deg,#0d1226,#1e2740 60%,#161d33)' },
+    deep:  { name:'Navy đậm',   base:'#1b2440', bg:'linear-gradient(120deg,#222d50 0%,#1b2440 45%,#131a2e 100%)', spine:'linear-gradient(90deg,#090d1c,#171f38 60%,#101627)' },
+    denim: { name:'Navy nhạt',  base:'#2f3d5e', bg:'linear-gradient(120deg,#3a4a70 0%,#2f3d5e 45%,#25314c 100%)', spine:'linear-gradient(90deg,#121830,#253052 60%,#1c2542)' }
+  }
+};
+
+/* ---------- ribbon inner art ---------- */
+function starSVG(){
+  return `<svg class="star" viewBox="0 0 30 30"><path fill="#ffcd3c" d="M15 3l3.1 9.4h9.9l-8 5.9 3 9.4-8-5.8-8 5.8 3-9.4-8-5.9h9.9z"/></svg>`;
+}
+function ukSVG(){
+  return `<svg class="bg" viewBox="0 0 34 110" preserveAspectRatio="none">
+    <rect width="34" height="110" fill="#012169"/>
+    <path d="M0,0 L34,110 M34,0 L0,110" stroke="#f5f2ea" stroke-width="7"/>
+    <path d="M0,0 L34,110 M34,0 L0,110" stroke="#C8102E" stroke-width="2.8"/>
+    <path d="M17,0 V110 M0,55 H34" stroke="#f5f2ea" stroke-width="11"/>
+    <path d="M17,0 V110 M0,55 H34" stroke="#C8102E" stroke-width="6.4"/>
+  </svg>`;
+}
+function vnSVG(){
+  return `<svg class="bg" viewBox="0 0 34 110" preserveAspectRatio="none"><rect width="34" height="110" fill="#da251d"/></svg>`;
+}
+
+/* ---------- state (defaults) ---------- */
+const DEF = { viewLang:'vi', rbLeft:18, rbGap:6, rbWidth:34, rbActive:104, rbIdle:72,
+              rbBorderW:2, rbBorderColor:'#f5f2ea',
+              vnPalette:'flag', vnCover:'#8f251c', vnTitle:'#f6c94a', vnFrame:'#f6c94a',
+              enPalette:'union', enCover:'#0a3161', enTitle:'#ed2323', enFrame:'#C8102E',
+              subtitleVN:'Vạn vật tiến hoá thế nào?', subtitleEN:'How things evolution?',
+              stWvi:0, stCvi:'#741d15', stWen:1, stCen:'#f5f2ea',
+              frameVisible:false, frameInset:22, frameWidth:2,
+              decorOn:true, dx:44, dy:26, dwPct:89, dOpacity:85 };
+let S = { ...DEF };
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+function hexToRgba(hex, a){
+  const h = hex.replace('#','');
+  const n = parseInt(h.length===3 ? h.split('').map(c=>c+c).join('') : h, 16);
+  return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+}
+function hexToRgb(hex){
+  const h = hex.replace('#','');
+  const n = parseInt(h.length===3 ? h.split('').map(c=>c+c).join('') : h, 16);
+  return [(n>>16)&255, (n>>8)&255, n&255];
+}
+function rgbToHex(r,g,b){
+  return '#' + [r,g,b].map(v=>Math.round(Math.max(0,Math.min(255,v))).toString(16).padStart(2,'0')).join('');
+}
+function mixHex(a, b, t){
+  const A = hexToRgb(a), B = hexToRgb(b);
+  return rgbToHex(A[0]+(B[0]-A[0])*t, A[1]+(B[1]-A[1])*t, A[2]+(B[2]-A[2])*t);
+}
+function curPalette(langKey){
+  const name = langKey==='vi' ? S.vnPalette : S.enPalette;
+  const base = langKey==='vi' ? S.vnCover : S.enCover;
+  return { pal: PALETTES[langKey][name], base, isPreset: base === PALETTES[langKey][name].base };
+}
+function coverBg(langKey){
+  const { pal, base, isPreset } = curPalette(langKey);
+  if(isPreset) return pal.bg;
+  return `linear-gradient(120deg,${mixHex(base,'#ffffff',.16)} 0%,${base} 45%,${mixHex(base,'#191008',.2)} 100%)`;
+}
+function spineBg(langKey){
+  const { pal, base, isPreset } = curPalette(langKey);
+  if(isPreset) return pal.spine;
+  return `linear-gradient(90deg,${mixHex(base,'#000000',.74)},${mixHex(base,'#000000',.5)} 60%,${mixHex(base,'#000000',.62)})`;
+}
+
+function renderRibbons(){
+  const wrap = $('ribbons');
+  wrap.style.left = S.rbLeft + 'px';
+  wrap.style.gap = S.rbGap + 'px';
+  const activeLen = Math.max(S.rbActive, S.rbIdle + 8);
+  const T = S.rbBorderW;
+  const notch = Math.max(11 - T, 3);
+  const order = ['vi','en'];
+  wrap.innerHTML = order.map(lang=>{
+    const art = lang==='vi' ? vnSVG() + starSVG() : ukSVG();
+    const state = lang===S.viewLang ? 'active' : '';
+    return `<div class="ribbon ${state}" data-lang="${lang}" style="width:${S.rbWidth}px;height:${state ? activeLen : S.rbIdle}px;background:${S.rbBorderColor}">` +
+           `<div class="rb-inner" style="inset:${T}px;clip-path:polygon(0 0,100% 0,100% 100%,50% calc(100% - ${notch}px),0 100%)">${art}</div></div>`;
+  }).join('');
+  wrap.querySelectorAll('.ribbon').forEach(el=>{
+    el.addEventListener('mouseenter', ()=>{ if(!el.classList.contains('active')) el.style.height = (S.rbIdle + 14) + 'px'; });
+    el.addEventListener('mouseleave', ()=>{ if(!el.classList.contains('active')) el.style.height = S.rbIdle + 'px'; });
+    el.addEventListener('click', e=>{
+      e.stopPropagation();
+      const target = el.dataset.lang;
+      if(target !== S.viewLang){ S.viewLang = target; syncRadio('viewLang', target); renderAll(); }
+    });
+  });
+}
+
+function renderDeco(){
+  const layer = $('decoLayer');
+  if(!layer) return;
+  layer.style.display = S.decorOn ? '' : 'none';
+  layer.style.left = S.dx + 'px';
+  layer.style.top = S.dy + 'px';
+  layer.style.width = Math.round(640 * S.dwPct/100) + 'px';
+  layer.style.opacity = S.dOpacity/100;
+}
+
+function renderAll(){
+  const T = S.viewLang==='vi' ? S.vnTitle : S.enTitle;
+  $('layerVI').style.background = coverBg('vi');
+  $('layerEN').style.background = coverBg('en');
+  $('layerVI').style.opacity = S.viewLang==='vi' ? 1 : 0;
+  $('layerEN').style.opacity = S.viewLang==='en' ? 1 : 0;
+  $('spine').style.background = spineBg(S.viewLang);
+  $('frame').style.display = S.frameVisible ? '' : 'none';
+  $('frame').style.inset = S.frameInset + 'px';
+  $('frame').style.borderWidth = S.frameWidth + 'px';
+  $('frame').style.borderColor = hexToRgba(S.viewLang==='vi' ? S.vnFrame : S.enFrame, .32);
+  $('titleEl').style.color = T;
+  $('tagEl').style.color = hexToRgba(T, .92);
+  $('tagEl').textContent = S.viewLang==='vi' ? S.subtitleVN : S.subtitleEN;
+  const stW = S.viewLang==='vi' ? S.stWvi : S.stWen;
+  const stC = S.viewLang==='vi' ? S.stCvi : S.stCen;
+  ['titleEl','tagEl'].forEach(id=>{
+    const el = $(id);
+    if(stW > 0){ el.style.webkitTextStroke = stW + 'px ' + stC; }
+    else { el.style.webkitTextStroke = ''; }
+  });
+  renderRibbons();
+  renderDeco();
+}
+
+function syncRadio(name, val){
+  document.querySelectorAll(`input[name=${name}]`).forEach(r=>{ r.checked = r.value === val; });
+}
+
+/* ---------- bind controls ---------- */
+document.querySelectorAll('input[name=viewLang],input[name=vnPalette],input[name=enPalette]').forEach(r=>{
+  r.addEventListener('change', ()=>{
+    S[r.name] = r.value;
+    if(r.name==='vnPalette'){ S.vnCover = PALETTES.vi[r.value].base; $('vnCover').value = S.vnCover; $('vnCoverHex').textContent = S.vnCover; }
+    if(r.name==='enPalette'){ S.enCover = PALETTES.en[r.value].base; $('enCover').value = S.enCover; $('enCoverHex').textContent = S.enCover; }
+    renderAll();
+  });
+});
+const sliders = [['rbLeft','rbLeftVal'],['rbGap','rbGapVal'],['rbWidth','rbWidthVal'],['rbActive','rbActiveVal'],['rbIdle','rbIdleVal'],['rbBorderW','rbBorderWVal'],['frameInset','frameInsetVal'],['frameWidth','frameWidthVal'],['stWvi','stWviVal'],['stWen','stWenVal']];
+sliders.forEach(([id, valId])=>{
+  $(id).addEventListener('input', e=>{ S[id] = +e.target.value; $(valId).textContent = e.target.value; renderAll(); });
+});
+$('vnTitle').addEventListener('input', e=>{ S.vnTitle = e.target.value; $('vnTitleHex').textContent = S.vnTitle; renderAll(); });
+$('vnCover').addEventListener('input', e=>{ S.vnCover = e.target.value; $('vnCoverHex').textContent = S.vnCover; renderAll(); });
+$('vnFrame').addEventListener('input', e=>{ S.vnFrame = e.target.value; $('vnFrameHex').textContent = S.vnFrame; renderAll(); });
+$('enCover').addEventListener('input', e=>{ S.enCover = e.target.value; $('enCoverHex').textContent = S.enCover; renderAll(); });
+$('enFrame').addEventListener('input', e=>{ S.enFrame = e.target.value; $('enFrameHex').textContent = S.enFrame; renderAll(); });
+$('rbBorderColor').addEventListener('input', e=>{ S.rbBorderColor = e.target.value; $('rbBorderColorHex').textContent = S.rbBorderColor; renderRibbons(); });
+$('stCvi').addEventListener('input', e=>{ S.stCvi = e.target.value; $('stCviHex').textContent = S.stCvi; renderAll(); });
+$('stCen').addEventListener('input', e=>{ S.stCen = e.target.value; $('stCenHex').textContent = S.stCen; renderAll(); });
+$('enTitle').addEventListener('input', e=>{ S.enTitle = e.target.value; $('enTitleHex').textContent = S.enTitle; renderAll(); });
+$('subtitleVN').addEventListener('input', e=>{ S.subtitleVN = e.target.value; renderAll(); });
+$('subtitleEN').addEventListener('input', e=>{ S.subtitleEN = e.target.value; renderAll(); });
+$('frameVisible').addEventListener('change', e=>{ S.frameVisible = e.target.checked; renderAll(); });
+
+/* ---------- decoration layer controls ---------- */
+$('decorOn').addEventListener('change', e=>{ S.decorOn = e.target.checked; renderAll(); });
+['dx','dy'].forEach(id=>{
+  $(id).addEventListener('input', e=>{ S[id] = +e.target.value; $(id+'Val').textContent = e.target.value; renderAll(); });
+});
+$('dwPct').addEventListener('input', e=>{ S.dwPct = +e.target.value; $('dwPctVal').textContent = e.target.value; renderAll(); });
+$('dOpacity').addEventListener('input', e=>{ S.dOpacity = +e.target.value; $('dOpacityVal').textContent = e.target.value; renderAll(); });
+
+$('btnCopy').addEventListener('click', ()=>{
+  const cfg = { rbLeft:S.rbLeft, rbGap:S.rbGap, rbWidth:S.rbWidth, rbActive:S.rbActive, rbIdle:S.rbIdle,
+                rbBorderW:S.rbBorderW, rbBorderColor:S.rbBorderColor,
+                frameVisible:S.frameVisible, frameInset:S.frameInset, frameWidth:S.frameWidth,
+                vnPalette:S.vnPalette, vnCover:S.vnCover, vnTitle:S.vnTitle, vnFrame:S.vnFrame,
+                enPalette:S.enPalette, enCover:S.enCover, enTitle:S.enTitle, enFrame:S.enFrame,
+                stWvi:S.stWvi, stCvi:S.stCvi, stWen:S.stWen, stCen:S.stCen,
+                subtitleVN:S.subtitleVN, subtitleEN:S.subtitleEN,
+                decorOn:S.decorOn, dx:S.dx, dy:S.dy, dwPct:S.dwPct, dOpacity:S.dOpacity };
+  navigator.clipboard.writeText(JSON.stringify(cfg)).then(()=>{
+    $('copyOk').style.display = 'inline-block';
+    setTimeout(()=>{ $('copyOk').style.display='none'; }, 2500);
+  });
+});
+$('btnReset').addEventListener('click', ()=>{
+  S = { ...DEF };
+  ['viewLang','vnPalette','enPalette'].forEach(n=>syncRadio(n, S[n]));
+  sliders.forEach(([id, valId])=>{ $(id).value = S[id]; $(valId).textContent = S[id]; });
+  $('vnTitle').value = S.vnTitle; $('vnTitleHex').textContent = S.vnTitle;
+  $('vnCover').value = S.vnCover; $('vnCoverHex').textContent = S.vnCover;
+  $('vnFrame').value = S.vnFrame; $('vnFrameHex').textContent = S.vnFrame;
+  $('enTitle').value = S.enTitle; $('enTitleHex').textContent = S.enTitle;
+  $('enCover').value = S.enCover; $('enCoverHex').textContent = S.enCover;
+  $('enFrame').value = S.enFrame; $('enFrameHex').textContent = S.enFrame;
+  $('rbBorderColor').value = S.rbBorderColor; $('rbBorderColorHex').textContent = S.rbBorderColor;
+  $('stCvi').value = S.stCvi; $('stCviHex').textContent = S.stCvi;
+  $('stCen').value = S.stCen; $('stCenHex').textContent = S.stCen;
+  $('subtitleVN').value = S.subtitleVN; $('subtitleEN').value = S.subtitleEN;
+  $('frameVisible').checked = S.frameVisible;
+  $('decorOn').checked = S.decorOn;
+  $('dx').value = S.dx; $('dxVal').textContent = S.dx;
+  $('dy').value = S.dy; $('dyVal').textContent = S.dy;
+  $('dwPct').value = S.dwPct; $('dwPctVal').textContent = S.dwPct;
+  $('dOpacity').value = S.dOpacity; $('dOpacityVal').textContent = S.dOpacity;
+  renderAll();
+});
+
+function fitBook(){
+  const stage = document.querySelector('.stage');
+  const availW = Math.max(320, stage.clientWidth - 24);
+  const availH = Math.max(380, window.innerHeight - 210);
+  document.documentElement.style.setProperty('--s', Math.min(1, availW/640, availH/820));
+}
+window.addEventListener('resize', fitBook);
+fitBook();
+
+renderAll();
+</script>
+</body>
+</html>

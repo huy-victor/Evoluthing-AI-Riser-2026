@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Loading Preview — Evoluthing</title>
+<link href="https://fonts.googleapis.com/css2?family=Fuzzy+Bubbles:wght@400;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:
+    radial-gradient(1200px 700px at 50% 30%, rgba(255,220,160,.10), transparent 60%),
+    radial-gradient(900px 600px at 78% 82%, rgba(120,70,40,.16), transparent 62%),
+    linear-gradient(160deg,#3a2c22 0%,#241a14 55%,#171009 100%);
+  font-family:Inter,system-ui,sans-serif;
+  display:flex;flex-direction:column;align-items:center;gap:16px;padding:18px;min-height:100vh;
+}
+h2{color:#e8c98a;font-family:"Playfair Display",serif;margin:0;text-align:center}
+.sub{color:#b8a894;font-size:13px;text-align:center;max-width:900px;line-height:1.5}
+.sub code{background:rgba(255,255,255,.1);padding:1px 6px;border-radius:6px;color:#e8c98a}
+.layout{display:flex;gap:18px;align-items:flex-start;justify-content:center;width:100%;max-width:1600px}
+.controls{display:flex;flex-direction:column;gap:14px;align-items:stretch;background:rgba(0,0,0,.22);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);width:370px;flex-shrink:0;position:sticky;top:18px;max-height:calc(100vh - 36px);overflow-y:auto}
+.controls label{color:#e8c98a;font-size:13px;font-weight:600}
+.ctrl-group{background:rgba(255,255,255,.07);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.10);display:flex;flex-direction:column;gap:8px}
+.ctrl-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{font-family:Inter,sans-serif;font-size:12px;padding:5px 9px;border-radius:999px;background:#fdfaf3;color:#5a4632;border:1px solid #c9b99a;display:inline-block}
+.badge.warn{background:#fff1c7;color:#6b4a00;border-color:#e6c86a}
+.badge.over{background:#ffd1d1;color:#7a1e1e;border-color:#e58a8a}
+.badge.dim{background:rgba(255,255,255,.08);color:#b8a894;border-color:rgba(255,255,255,.12)}
+.btn{font-family:Inter,sans-serif;font-weight:700;background:#6b442b;color:#fdfaf3;border:none;border-radius:10px;padding:9px 16px;cursor:pointer}
+.btn:hover{background:#54331e}
+.btn.secondary{background:#3b3226}
+input.ctrl-input, textarea.ctrl-input{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226;font-family:"Fuzzy Bubbles",cursive;font-size:15px;line-height:1.45;-webkit-text-stroke:.45px currentColor}
+textarea.ctrl-input{resize:vertical}
+input[type=number].ctrl-num{width:72px;padding:6px 8px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226;font-family:Inter,sans-serif;font-size:13px}
+input[type=color]{width:42px;height:32px;padding:2px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;cursor:pointer}
+
+/* book replica — index.html 1200x820 spread */
+.book{
+  position:relative;perspective:2400px;
+  filter:drop-shadow(0 40px 60px rgba(0,0,0,.55));
+  width:min(1200px, calc(100vw - 430px), calc((100vh - 48px) * 1200 / 820));
+  aspect-ratio:1200/820;
+  background:transparent;flex-shrink:0;
+}
+.page-block{position:absolute;inset:12px 16px 12px 16px;display:block;}
+.binding{position:absolute;top:0;bottom:0;left:50%;width:60px;transform:translateX(-50%);pointer-events:none;z-index:5;
+  background:linear-gradient(90deg,transparent 0%,rgba(90,70,45,.16) 42%,rgba(60,45,28,.30) 50%,rgba(90,70,45,.16) 58%,transparent 100%)}
+.leaf{position:absolute;top:0;bottom:0;width:50%;
+  overflow:hidden;backface-visibility:visible;display:flex;flex-direction:column;
+  background:
+    repeating-linear-gradient(90deg, rgba(120,100,80,.05) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(180deg, rgba(120,100,80,.05) 0 1px, transparent 1px 28px),
+    linear-gradient(90deg,#efe6d4 0%,#f7f0e2 30%,#f9f3e6 100%);}
+.leaf-left{left:0;border-radius:6px 0 0 6px;border-right:1px dashed rgba(120,95,70,.22)}
+.leaf-right{right:0;border-radius:0 6px 6px 0}
+.leaf-inner{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;padding:44px 30px 40px}
+
+/* note nháp trên trang trái trống (chỉ trong preview, không thuộc design) */
+.ghost-note{position:absolute;inset:0;display:grid;place-items:center;font-family:"Fuzzy Bubbles",cursive;font-size:17px;color:#8a7a5f;opacity:.28;-webkit-text-stroke:.4px currentColor;transform:rotate(-2deg)}
+
+/* ===== LOADING SCENE — tham số production làm mặc định ===== */
+.loading{
+  --ld-pen-fs:56px; --ld-bob-dur:1.1s; --ld-bob-h:14px; --ld-tilt-a:-8deg; --ld-tilt-b:6deg;
+  --ld-title-fs:28px; --ld-title-col:#5a3f2b;
+  --ld-msg-fs:22px; --ld-msg-col:#6f5f47; --ld-fade:.3s;
+  --ld-dots-fs:26px; --ld-dots-col:#6f5f47; --ld-blink:1.2s;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:20px
+}
+.loading .pen{font-size:var(--ld-pen-fs);animation:bob var(--ld-bob-dur) ease-in-out infinite}
+.loading .topic-title{font-family:"Playfair Display",serif;font-size:var(--ld-title-fs);font-weight:700;color:var(--ld-title-col);margin-top:20px;height:calc(var(--ld-title-fs) * 2.85);display:flex;align-items:center;justify-content:center}
+.loading .msg{margin-top:14px;font-family:"Fuzzy Bubbles",cursive;font-size:var(--ld-msg-fs);color:var(--ld-msg-col);-webkit-text-stroke:.7px currentColor;height:calc(var(--ld-msg-fs) * 4.55);overflow:hidden;transition:opacity var(--ld-fade) ease;white-space:pre-line}
+.loading .msg.fading{opacity:0}
+.loading .dots{font-family:"Fuzzy Bubbles",cursive;font-size:var(--ld-dots-fs);color:var(--ld-dots-col);-webkit-text-stroke:.7px currentColor;margin-top:4px}
+.loading .dots span{animation:blink var(--ld-blink) infinite}
+.loading .dots span:nth-child(2){animation-delay:.2s}
+.loading .dots span:nth-child(3){animation-delay:.4s}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(var(--ld-tilt-a))}50%{transform:translateY(calc(var(--ld-bob-h) * -1)) rotate(var(--ld-tilt-b))}}
+@keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+
+@media(max-width:1150px){
+  .layout{flex-direction:column;align-items:center}
+  .controls{width:min(92vw,420px);position:static;max-height:none}
+  .book{width:min(92vw,700px);aspect-ratio:auto;min-height:620px}
+  .page-block{position:relative;inset:auto;height:auto;display:block}
+  .leaf{position:relative;width:100%;height:auto}
+  .leaf-left{border-right:none;border-bottom:1px dashed rgba(120,95,70,.22)}
+  .leaf-inner{padding:36px 18px 28px}
+  .binding{display:none}
+}
+</style>
+</head>
+<body>
+  <h2>Loading Preview — cảnh chờ AI generate (trang phải, trang trái trống)</h2>
+  <div class="sub">
+    Bản mô phỏng đúng 1:1 cảnh loading trong app (mặc định khoá bằng thông số production). <b>Mỗi fact cách nhau bằng MỘT DÒNG TRỐNG</b>; xuống dòng bên trong một fact sẽ được giữ nguyên khi hiển thị. Chỉnh panel bên cạnh xem live, chưa vừa thì bấm <code>Copy dòng gửi anh</code> rồi dán vào chat cho anh đồng bộ về <code>index.html</code>.
+  </div>
+
+  <div class="layout">
+    <div class="controls">
+      <div class="ctrl-group">
+        <label>Ngôn ngữ của các câu chữ</label>
+        <select id="selLang" class="btn secondary" style="font-weight:400;width:100%">
+          <option value="vi" selected>Tiếng Việt</option>
+          <option value="en">English</option>
+        </select>
+      </div>
+
+      <div class="ctrl-group">
+        <label for="inpTopic">Chủ đề (hiện sau dòng "Đang tạo quá trình tiến hóa của:")</label>
+        <input id="inpTopic" class="ctrl-input" value="pen">
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Cỡ: <input type="number" id="fsTitle" class="ctrl-num" value="28" min="16" max="44"> px</label>
+          <label style="font-size:11px;color:#b8a894">Màu:</label>
+          <input type="color" id="colTitle" value="#5a3f2b">
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <label>Bút chì nhảy</label>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Icon:</label>
+          <input type="text" id="inpPen" class="ctrl-input" value="✏️" style="width:64px;text-align:center">
+          <label style="font-size:11px;color:#b8a894">Cỡ: <input type="number" id="fsPen" class="ctrl-num" value="56" min="28" max="96"> px</label>
+        </div>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Nhịp nhảy: <input type="number" id="bobDur" class="ctrl-num" value="11" min="4" max="40"> (&times;0.1s)</label>
+          <label style="font-size:11px;color:#b8a894">Độ cao: <input type="number" id="bobH" class="ctrl-num" value="14" min="4" max="40"> px</label>
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <label for="inpMsgsVi">Các câu chữ — mỗi fact cách nhau 1 dòng trống (VI)</label>
+        <textarea id="inpMsgsVi" class="ctrl-input" style="height:520px">🦖 Bạn có biết?
+Một số loài khủng long nhỏ hơn cả con gà.
+
+🌱 Bạn có biết?
+Cây xanh tiến hóa để lấy ánh sáng mặt trời làm nguồn năng lượng chính.
+
+🐋 Bạn có biết?
+Cá voi ngày xưa có chân và sống trên cạn.
+
+👀 Bạn có biết?
+Mắt người tiến hóa từ những tế bào cảm giác ánh sáng rất đơn giản.
+
+🐙 Bạn có biết?
+Bạch tuộc có tới ba trái tim.
+
+🦈 Bạn có biết?
+Cá mập xuất hiện từ trước cả khi cây cối tồn tại.
+
+🐝 Bạn có biết?
+Mật ong không bao giờ hỏng, tới 3.000 năm tuổi vẫn ăn được.
+
+🦉 Bạn có biết?
+Cú không thể đảo mắt, nên chúng phải xoay cả cái đầu.
+
+🐧 Bạn có biết?
+Chim cánh cụt "cầu hôn" bằng một viên sỏi.
+
+🐌 Bạn có biết?
+Ốc sên có thể ngủ một giấc dài tới 3 năm.
+
+🪐 Bạn có biết?
+Sao Thổ nhẹ đến mức có thể nổi trên nước.
+
+☀️ Bạn có biết?
+Ánh sáng mặt trời mất khoảng 8 phút mới tới được Trái Đất.
+
+🔥 Bạn có biết?
+Sao Kim nóng hơn Sao Thủy, dù Sao Thủy gần Mặt Trời hơn.
+
+🌕 Bạn có biết?
+Mặt Trăng rời xa Trái Đất khoảng 4 cm mỗi năm, đúng bằng tốc độ móng tay dài ra.
+
+🔇 Bạn có biết?
+Không gian vũ trụ tĩnh lặng tuyệt đối, vì không có không khí để truyền tiếng nói.
+
+🫧 Bạn có biết?
+Màng xốp bong bóng ban đầu được phát minh để... dán tường.
+
+🍦 Bạn có biết?
+Ốc kem ra đời khi người bán kem hết sạch cốc đựng.
+
+⏰ Bạn có biết?
+Chiếc đồng hồ báo thức đầu tiên trên thế giới chỉ reo đúng một giờ: 4 giờ sáng.
+
+🩹 Bạn có biết?
+Băng cá nhân được phát minh từ một người chồng chế ra cho vợ mình.
+
+🖱️ Bạn có biết?
+Con chuột máy tính đầu tiên được làm bằng... gỗ.</textarea>
+        <label for="inpMsgsEn">Các câu chữ — mỗi fact cách nhau 1 dòng trống (EN)</label>
+        <textarea id="inpMsgsEn" class="ctrl-input" style="height:520px">🦖 Did you know?
+Some dinosaurs were smaller than a chicken.
+
+🌱 Did you know?
+Plants evolved to use sunlight as their main source of energy.
+
+🐋 Did you know?
+Whales once had legs and lived on land.
+
+👀 Did you know?
+The human eye evolved from much simpler light-sensing cells.
+
+🐙 Did you know?
+Octopuses have three hearts.
+
+🦈 Did you know?
+Sharks existed before trees did.
+
+🐝 Did you know?
+Honey never spoils. 3,000-year-old honey is still good to eat.
+
+🦉 Did you know?
+Owls can't move their eyes, so they spin their heads.
+
+🐧 Did you know?
+Penguins "propose" with a pebble.
+
+🐌 Did you know?
+Snails can sleep for up to 3 years.
+
+🪐 Did you know?
+Saturn is so light that it could float in water.
+
+☀️ Did you know?
+Sunlight takes about 8 minutes to reach Earth.
+
+🔥 Did you know?
+Venus is hotter than Mercury, even though Mercury is closer to the Sun.
+
+🌕 Did you know?
+The Moon moves about 4 cm away from Earth every year, as fast as your fingernails grow.
+
+🔇 Did you know?
+Space is completely silent because there is no air to carry sound.
+
+🫧 Did you know?
+Bubble wrap was first invented as wallpaper.
+
+🍦 Did you know?
+Ice cream cones were born when a seller ran out of bowls.
+
+⏰ Did you know?
+The first alarm clock could only ring at 4 a.m.
+
+🩹 Did you know?
+Band-Aids were invented by a husband for his wife.
+
+🖱️ Did you know?
+The first computer mouse was made of wood.</textarea>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Cỡ: <input type="number" id="fsMsg" class="ctrl-num" value="22" min="14" max="40"> px</label>
+          <label style="font-size:11px;color:#b8a894">Màu:</label>
+          <input type="color" id="colMsg" value="#6f5f47">
+        </div>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Đổi câu mỗi: <input type="number" id="rotEvery" class="ctrl-num" value="7000" min="300" max="20000" step="100"> ms</label>
+          <label style="font-size:11px;color:#b8a894"><input type="checkbox" id="chkFade" checked> Mờ dần khi đổi câu</label>
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <label>Ba chấm nhấp nháy</label>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894"><input type="checkbox" id="chkDots" checked> Hiện chấm</label>
+          <label style="font-size:11px;color:#b8a894">Cỡ: <input type="number" id="fsDots" class="ctrl-num" value="26" min="12" max="44"> px</label>
+          <label style="font-size:11px;color:#b8a894">Nháy: <input type="number" id="blinkDur" class="ctrl-num" value="12" min="4" max="40"> (&times;0.1s)</label>
+        </div>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Màu chấm:</label>
+          <input type="color" id="colDots" value="#6f5f47">
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-row">
+          <button class="btn secondary" id="btnReplay" style="flex:1">↺ Chạy lại từ câu đầu</button>
+        </div>
+        <div class="ctrl-row">
+          <button class="btn" id="btnCopy" style="flex:1">Copy dòng gửi anh</button>
+          <button class="btn secondary" id="btnReset" style="flex:1">Reset mặc định</button>
+        </div>
+        <span class="badge" id="copyBadge" style="font-size:11px;word-break:break-all">—</span>
+        <span class="badge dim" id="fitBadge">—</span>
+      </div>
+    </div>
+
+    <div class="book" id="book">
+      <div class="page-block">
+        <div class="binding"></div>
+        <div class="leaf leaf-left"><div class="leaf-inner"><div class="ghost-note">trang trái để trống khi loading</div></div></div>
+        <div class="leaf leaf-right"><div class="leaf-inner" id="leafRightInner"></div></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const $ = id => document.getElementById(id);
+const leafRightInner = $('leafRightInner');
+let rotTimer = null, msgIdx = 0;
+
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+function msgs(){
+  const raw = ($('selLang').value === 'vi' ? $('inpMsgsVi').value : $('inpMsgsEn').value);
+  // mỗi fact cách nhau bằng 1 dòng trống; các dòng bên trong 1 fact giữ nguyên
+  return raw.split(/\n\s*\n/).map(g => g.split('\n').map(s=>s.trim()).filter(Boolean).join('\n')).filter(Boolean);
+}
+
+function buildScene(){
+  const m = msgs();
+  const titlePrefix = $('selLang').value === 'vi' ? 'Đang tạo quá trình tiến hóa của: ' : 'Generating the evolution of: ';
+  leafRightInner.innerHTML = `
+    <div class="loading" id="pvLoading">
+      <div class="pen">${esc($('inpPen').value || '✏️')}</div>
+      <div class="topic-title">${esc(titlePrefix + $('inpTopic').value)}</div>
+      <div class="msg" id="pvMsg">${esc(m[0] || '')}</div>
+      ${$('chkDots').checked ? `<div class="dots"><span>·</span><span>·</span><span>·</span></div>` : ''}
+    </div>`;
+  applyVars(); restartRotation(); checkFit(); updateCopy();
+}
+
+function applyVars(){
+  const w = document.getElementById('pvLoading');
+  if(!w) return;
+  w.style.setProperty('--ld-pen-fs',   (parseInt($('fsPen').value)||56)+'px');
+  w.style.setProperty('--ld-bob-dur',  ((parseInt($('bobDur').value)||11)/10)+'s');
+  w.style.setProperty('--ld-bob-h',    (parseInt($('bobH').value)||14)+'px');
+  w.style.setProperty('--ld-title-fs', (parseInt($('fsTitle').value)||28)+'px');
+  w.style.setProperty('--ld-title-col',$('colTitle').value);
+  w.style.setProperty('--ld-msg-fs',   (parseInt($('fsMsg').value)||25)+'px');
+  w.style.setProperty('--ld-msg-col',  $('colMsg').value);
+  w.style.setProperty('--ld-dots-fs',  (parseInt($('fsDots').value)||26)+'px');
+  w.style.setProperty('--ld-dots-col', $('colDots').value);
+  w.style.setProperty('--ld-blink',    ((parseInt($('blinkDur').value)||12)/10)+'s');
+}
+
+// vòng lặp đổi câu — y hệt startAIJourney: bắt đầu câu 1, hết vòng quay lại; fade là tuỳ chọn thêm
+function restartRotation(){
+  clearInterval(rotTimer); msgIdx = 0;
+  const msgEl = document.getElementById('pvMsg');
+  if(msgEl) msgEl.textContent = msgs()[0] || '';
+  rotTimer = setInterval(()=>{
+    const m = msgs();
+    if(!m.length) return;
+    msgIdx = (msgIdx + 1) % m.length;
+    const el = document.getElementById('pvMsg');
+    if(!el){ clearInterval(rotTimer); return; }
+    if($('chkFade').checked){
+      el.classList.add('fading');
+      setTimeout(()=>{ el.textContent = m[msgIdx]; el.classList.remove('fading'); }, 300);
+    } else {
+      el.textContent = m[msgIdx];
+    }
+  }, parseInt($('rotEvery').value)||1200);
+}
+
+function checkFit(){
+  const measure = ()=>{
+    const wrap = document.getElementById('pvLoading'), inner = leafRightInner;
+    if(!wrap || !inner) return;
+    const over = wrap.scrollHeight > inner.clientHeight + 2;
+    if(over){
+      $('fitBadge').textContent = '⚠ TRÀN +' + (wrap.scrollHeight - inner.clientHeight) + 'px — giảm cỡ chữ';
+      $('fitBadge').className = 'badge over';
+    } else {
+      $('fitBadge').textContent = '✓ Vừa trang (còn ' + (inner.clientHeight - wrap.scrollHeight) + 'px)';
+      $('fitBadge').className = 'badge';
+    }
+  };
+  measure(); // đo ngay lập tức
+  requestAnimationFrame(measure); // và đo lại sau khi layout ổn định
+}
+
+function updateCopy(){
+  const cfg = [
+    'lang:' + $('selLang').value,
+    'pen:' + $('inpPen').value + ' ' + (parseInt($('fsPen').value)||56) + 'px bob' + ((parseInt($('bobDur').value)||11)/10) + 's/' + (parseInt($('bobH').value)||14) + 'px',
+    'title:' + (parseInt($('fsTitle').value)||28) + 'px(' + $('colTitle').value + ')',
+    'msg:' + (parseInt($('fsMsg').value)||25) + 'px(' + $('colMsg').value + ') every:' + (parseInt($('rotEvery').value)||1200) + 'ms fade:' + ($('chkFade').checked ? 'on' : 'off') + ' facts:' + msgs().length,
+    'dots:' + ($('chkDots').checked ? 'on' : 'off') + ' ' + (parseInt($('fsDots').value)||26) + 'px(' + $('colDots').value + ') blink:' + ((parseInt($('blinkDur').value)||12)/10) + 's'
+  ].join(' | ');
+  $('copyBadge').textContent = cfg;
+}
+
+['fsTitle','fsPen','bobDur','bobH','fsMsg','fsDots','blinkDur'].forEach(id=>
+  $(id).addEventListener('input', ()=>{ applyVars(); checkFit(); updateCopy(); }));
+['inpTopic','inpPen'].forEach(id=> $(id).addEventListener('input', buildScene));
+['inpMsgsVi','inpMsgsEn'].forEach(id=> $(id).addEventListener('input', ()=>{ restartRotation(); checkFit(); updateCopy(); }));
+['chkFade'].forEach(id=> $(id).addEventListener('change', restartRotation));
+['chkDots'].forEach(id=> $(id).addEventListener('change', buildScene));
+['colTitle','colMsg','colDots'].forEach(id=> $(id).addEventListener('input', ()=>{ applyVars(); updateCopy(); }));
+$('rotEvery').addEventListener('input', restartRotation);
+$('selLang').addEventListener('change', ()=>{ restartRotation(); updateCopy(); });
+$('btnReplay').addEventListener('click', restartRotation);
+$('btnReset').addEventListener('click', ()=>{ location.reload(); });
+
+$('btnCopy').addEventListener('click', async ()=>{
+  const t = $('copyBadge').textContent
+    + '\ntopic: ' + $('inpTopic').value
+    + '\nVI: ' + $('inpMsgsVi').value.replace(/\n/g,' | ')
+    + '\nEN: ' + $('inpMsgsEn').value.replace(/\n/g,' | ');
+  try{
+    await navigator.clipboard.writeText(t);
+    $('btnCopy').textContent = 'Đã copy ✓';
+    setTimeout(()=>$('btnCopy').textContent = 'Copy dòng gửi anh', 1200);
+  }catch{ alert(t); }
+});
+
+buildScene();
+window.addEventListener('resize', checkFit);
+console.log('[LoadingPreview] ready');
+</script>
+</body>
+</html>

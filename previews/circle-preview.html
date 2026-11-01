@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Circle Preview — Evoluthing</title>
+<link href="https://fonts.googleapis.com/css2?family=Fuzzy+Bubbles:wght@400;700&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:
+    radial-gradient(1200px 700px at 50% 30%, rgba(255,220,160,.10), transparent 60%),
+    radial-gradient(900px 600px at 78% 82%, rgba(120,70,40,.16), transparent 62%),
+    linear-gradient(160deg,#3a2c22 0%,#241a14 55%,#171009 100%);
+  font-family:Inter,system-ui,sans-serif;
+  display:flex;flex-direction:column;align-items:center;gap:16px;padding:18px;min-height:100vh;
+}
+h2{color:#e8c98a;font-family:"Playfair Display",serif;margin:0;text-align:center}
+.sub{color:#b8a894;font-size:13px;text-align:center;max-width:860px;line-height:1.5}
+.sub code{background:rgba(255,255,255,.1);padding:1px 6px;border-radius:6px;color:#e8c98a}
+.layout{display:flex;gap:18px;align-items:flex-start;justify-content:center;width:100%;max-width:1600px}
+.controls{display:flex;flex-direction:column;gap:14px;align-items:stretch;background:rgba(0,0,0,.22);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);width:380px;flex-shrink:0;position:sticky;top:18px;max-height:calc(100vh - 36px);overflow-y:auto}
+.controls label{color:#e8c98a;font-size:13px;font-weight:600}
+.ctrl-group{background:rgba(255,255,255,.07);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.10);display:flex;flex-direction:column;gap:8px}
+.ctrl-group>label{margin-bottom:2px}
+.ctrl-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{font-family:Inter,sans-serif;font-size:12px;padding:5px 9px;border-radius:999px;background:#fdfaf3;color:#5a4632;border:1px solid #c9b99a;display:inline-block}
+.badge.dim{background:rgba(255,255,255,.08);color:#b8a894;border-color:rgba(255,255,255,.12)}
+.btn{font-family:Inter,sans-serif;font-weight:700;background:#6b442b;color:#fdfaf3;border:none;border-radius:10px;padding:9px 16px;cursor:pointer}
+.btn:hover{background:#54331e}
+.btn.secondary{background:#3b3226}
+input.ctrl-input{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226;font-family:"Fuzzy Bubbles",cursive;font-size:15px;-webkit-text-stroke:.45px currentColor}
+input[type=number].ctrl-num{width:72px;padding:6px 8px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226;font-family:Inter,sans-serif;font-size:13px}
+input[type=color]{width:42px;height:32px;padding:2px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;cursor:pointer}
+input[type=range]{flex:1}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;font-family:Inter,sans-serif;font-size:12px;font-weight:600;padding:7px 6px;border-radius:8px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#b8a894;cursor:pointer}
+.seg button.on{background:#6b442b;color:#fdfaf3;border-color:#6b442b}
+
+/* paper replica — right leaf of the prompt spread */
+.paper{
+  position:relative;flex-shrink:0;
+  width:min(760px, calc(100vw - 440px), calc((100vh - 120px) * 600 / 820));
+  aspect-ratio:600/820;
+  background:
+    repeating-linear-gradient(90deg, rgba(120,100,80,.05) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(180deg, rgba(120,100,80,.05) 0 1px, transparent 1px 28px),
+    linear-gradient(90deg,#efe6d4 0%,#f7f0e2 30%,#f9f3e6 100%);
+  border-radius:0 6px 6px 0;
+  border-left:1px dashed rgba(120,95,70,.22);
+  box-shadow:0 30px 50px rgba(0,0,0,.5);
+  display:flex;flex-direction:column;justify-content:center;padding:44px 30px 40px;
+}
+.paper .hint-top{position:absolute;top:14px;right:18px;font-family:"Playfair Display",serif;font-size:15px;font-style:italic;color:#6b5a44}
+
+/* ===== circle button — same structure as index.html ===== */
+.btn-explore-circle{
+  position:relative;display:grid;place-items:center;
+  width:var(--circle-w,220px);height:var(--circle-h,180px);
+  margin:0 auto;flex-shrink:0;cursor:pointer;
+}
+.circle-draw{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.circle-draw img{position:absolute;left:var(--ink-x,0);top:var(--ink-y,0);width:var(--ink-scale,100%);height:var(--ink-scale-h,100%);object-fit:fill;opacity:var(--ink-opacity,1)}
+.circle-draw .ink-masked{position:absolute;inset:var(--ink-top,0) var(--ink-right,0) var(--ink-bottom,0) var(--ink-left,0);
+  background:var(--ink-color,#3b3226);
+  -webkit-mask-image:url(circle.png);mask-image:url(circle.png);
+  -webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+  -webkit-mask-size:var(--mask-scale,100% 100%);mask-size:var(--mask-scale,100% 100%);
+  -webkit-mask-position:var(--mask-x,0) var(--mask-y,0);mask-position:var(--mask-x,0) var(--mask-y,0);
+  opacity:var(--ink-opacity,1)}
+.btn-explore{
+  position:relative;z-index:1;
+  font-family:"Fuzzy Bubbles",cursive;font-size:var(--btn-font,20px);font-weight:400;-webkit-text-stroke:.45px currentColor;
+  color:var(--btn-text,#3b3226);background:transparent;border:none;
+  cursor:pointer;padding:0 18px;line-height:1;text-align:center;white-space:nowrap;
+  translate:var(--btn-x,0) var(--btn-y,0);
+}
+</style>
+</head>
+<body>
+  <h2>Circle Preview — khung oval tĩnh (circle.png)</h2>
+  <div class="sub">
+    Hover đã bỏ — circle giờ là ảnh tĩnh <code>circle.png</code>. Chỉnh kích thước, scale, màu, chữ rồi bấm <code>Copy dòng gửi anh</code>.
+  </div>
+
+  <div class="layout">
+    <div class="controls">
+      <div class="ctrl-group">
+        <label>Khung circle (box)</label>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Rộng: <input type="range" id="rangeCW" min="120" max="420" value="220"> <input type="number" id="numCW" class="ctrl-num" value="220" min="100" max="500"> px</label>
+        </div>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Cao: <input type="range" id="rangeCH" min="50" max="260" value="180"> <input type="number" id="numCH" class="ctrl-num" value="180" min="40" max="320"> px</label>
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <label>Ảnh circle — scale &amp; vị trí trong box</label>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Scale rộng: <input type="range" id="rangeScaleW" min="40" max="160" value="100"> <input type="number" id="numScaleW" class="ctrl-num" value="100" min="20" max="200"> %</label>
+        </div>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Scale cao: <input type="range" id="rangeScaleH" min="40" max="160" value="100"> <input type="number" id="numScaleH" class="ctrl-num" value="100" min="20" max="200"> %</label>
+        </div>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Dịch X: <input type="range" id="rangeIX" min="-100" max="100" value="0"> <input type="number" id="numIX" class="ctrl-num" value="0" min="-200" max="200"> px</label>
+        </div>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Dịch Y: <input type="range" id="rangeIY" min="-100" max="100" value="0"> <input type="number" id="numIY" class="ctrl-num" value="0" min="-200" max="200"> px</label>
+        </div>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Opacity: <input type="range" id="rangeOpacity" min="10" max="100" value="100"> <span class="badge dim" id="badgeOpacity">100%</span></label>
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <label>Màu nét circle</label>
+        <div class="seg">
+          <button id="modeNatural" class="on">Nét gốc PNG</button>
+          <button id="modeTint">Tô màu (mask)</button>
+        </div>
+        <div class="ctrl-row" id="tintRow" style="display:none">
+          <label style="font-size:11px;color:#b8a894">Màu:</label>
+          <input type="color" id="colInk" value="#3b3226">
+          <input type="text" id="colInkHex" value="#3b3226" style="flex:1;padding:6px 8px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226;font-family:Inter,sans-serif;font-size:12px">
+        </div>
+        <div style="font-size:10px;color:#b8a894;line-height:1.3">Nét gốc PNG là đen mực (#1e1d1d). Tô màu dùng mask để đổi màu nét theo palette sổ (vd #3b3226).</div>
+      </div>
+
+      <div class="ctrl-group">
+        <label for="inpBtn">Chữ trên circle</label>
+        <input id="inpBtn" class="ctrl-input" value="✨Khám phá✨">
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Cỡ chữ: <input type="number" id="fsBtn" class="ctrl-num" value="20" min="12" max="40"> px</label>
+          <label style="font-size:11px;color:#b8a894">Màu:</label>
+          <input type="color" id="colText" value="#3b3226">
+          <input type="text" id="colTextHex" value="#3b3226" style="flex:1;padding:6px 8px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226;font-family:Inter,sans-serif;font-size:12px">
+        </div>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Dịch chữ X: <input type="range" id="rangeBX" min="-60" max="60" value="0"></label>
+          <label style="font-size:11px;color:#b8a894">Y: <input type="range" id="rangeBY" min="-60" max="60" value="0"></label>
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-row">
+          <button class="btn" id="btnCopy" style="flex:1">Copy dòng gửi anh</button>
+          <button class="btn secondary" id="btnReset" style="flex:1">Reset mặc định</button>
+        </div>
+        <span class="badge" id="copyBadge" style="font-size:11px;word-break:break-all">—</span>
+      </div>
+    </div>
+
+    <div class="paper" id="paper">
+      <div class="hint-top">Hôm nay, mình muốn tìm hiểu…</div>
+      <div class="btn-explore-circle" id="pvCircle" style="--circle-w:220px;--circle-h:180px">
+        <span class="circle-draw" aria-hidden="true" id="pvDraw">
+          <img id="pvImg" src="../assets/circle.png" alt="">
+        </span>
+        <button class="btn-explore" id="pvBtn" style="--btn-font:20px;--btn-text:#3b3226">✨Khám phá✨</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const $ = id => document.getElementById(id);
+const pvCircle=$('pvCircle'), pvDraw=$('pvDraw'), pvImg=$('pvImg'), pvBtn=$('pvBtn');
+const rangeCW=$('rangeCW'),numCW=$('numCW'),rangeCH=$('rangeCH'),numCH=$('numCH');
+const rangeScaleW=$('rangeScaleW'),numScaleW=$('numScaleW'),rangeScaleH=$('rangeScaleH'),numScaleH=$('numScaleH');
+const rangeIX=$('rangeIX'),numIX=$('numIX'),rangeIY=$('rangeIY'),numIY=$('numIY');
+const rangeOpacity=$('rangeOpacity'),badgeOpacity=$('badgeOpacity');
+const modeNatural=$('modeNatural'),modeTint=$('modeTint'),tintRow=$('tintRow');
+const colInk=$('colInk'),colInkHex=$('colInkHex');
+const inpBtn=$('inpBtn'),fsBtn=$('fsBtn'),colText=$('colText'),colTextHex=$('colTextHex');
+const rangeBX=$('rangeBX'),rangeBY=$('rangeBY');
+const copyBadge=$('copyBadge');
+
+let tintMode=false;
+
+function syncPair(range,num,apply){
+  if(!range||!num) return;
+  range.addEventListener('input',()=>{ num.value=range.value; apply(); });
+  num.addEventListener('input',()=>{ range.value=num.value; apply(); });
+}
+function hexValid(s){ return /^#[0-9a-fA-F]{6}$/.test(s); }
+
+function apply(){
+  const cw=parseInt(numCW.value)||220, ch=parseInt(numCH.value)||180;
+  const sw=(parseInt(numScaleW.value)||100), sh=(parseInt(numScaleH.value)||100);
+  const ix=parseInt(numIX.value)||0, iy=parseInt(numIY.value)||0;
+  const op=(parseInt(rangeOpacity.value)||100)/100;
+  pvCircle.style.setProperty('--circle-w',cw+'px');
+  pvCircle.style.setProperty('--circle-h',ch+'px');
+  // natural img mode: scale relative to box size
+  pvImg.style.display = tintMode ? 'none' : 'block';
+  pvImg.style.width = sw+'%';
+  pvImg.style.height = sh+'%';
+  pvImg.style.left = (ix + (100-sw)/2) + '%';
+  pvImg.style.top = (iy + (100-sh)/2) + '%';
+  pvImg.style.opacity = op;
+  // masked mode
+  let inkMasked = pvDraw.querySelector('.ink-masked');
+  if(tintMode){
+    if(!inkMasked){
+      inkMasked=document.createElement('div');
+      inkMasked.className='ink-masked';
+      pvDraw.appendChild(inkMasked);
+    }
+    const col = colInk.value || '#3b3226';
+    inkMasked.style.setProperty('--mask-scale', sw+'% '+sh+'%');
+    inkMasked.style.setProperty('--mask-x', 'calc('+(ix + (100-sw)/2)+'% * '+(cw/100)+')');
+    inkMasked.style.setProperty('--mask-y', 'calc('+(iy + (100-sh)/2)+'% * '+(ch/100)+')');
+    inkMasked.style.setProperty('--ink-color', col);
+    inkMasked.style.setProperty('--ink-opacity', op);
+    inkMasked.style.display='block';
+  } else if(inkMasked){
+    inkMasked.style.display='none';
+  }
+  // text
+  pvBtn.textContent = inpBtn.value || 'Khám phá';
+  pvBtn.style.setProperty('--btn-font',(parseInt(fsBtn.value)||20)+'px');
+  pvBtn.style.setProperty('--btn-text', colText.value||'#3b3226');
+  pvBtn.style.setProperty('--btn-x',(parseInt(rangeBX.value)||0)+'px');
+  pvBtn.style.setProperty('--btn-y',(parseInt(rangeBY.value)||0)+'px');
+  badgeOpacity.textContent = rangeOpacity.value+'%';
+  updateCopy();
+}
+
+function updateCopy(){
+  const line = `circle:${numCW.value}x${numCH.value} scaleW:${numScaleW.value}% scaleH:${numScaleH.value}% x:${numIX.value} y:${numIY.value} opacity:${rangeOpacity.value}% mode:${tintMode?'tint('+colInk.value+')':'natural'} btn:"${inpBtn.value}" ${fsBtn.value}px(${colText.value}) btnXY:${rangeBX.value}/${rangeBY.value}`;
+  copyBadge.textContent = line;
+}
+
+syncPair(rangeCW,numCW,apply); syncPair(rangeCH,numCH,apply);
+syncPair(rangeScaleW,numScaleW,apply); syncPair(rangeScaleH,numScaleH,apply);
+syncPair(rangeIX,numIX,apply); syncPair(rangeIY,numIY,apply);
+rangeOpacity.addEventListener('input',apply);
+[rangeBX,rangeBY].forEach(el=>el.addEventListener('input',apply));
+[inpBtn,fsBtn].forEach(el=>el.addEventListener('input',apply));
+colText.addEventListener('input',()=>{ colTextHex.value=colText.value; apply(); });
+colTextHex.addEventListener('input',()=>{ if(hexValid(colTextHex.value)){ colText.value=colTextHex.value; apply(); } });
+colInk.addEventListener('input',()=>{ colInkHex.value=colInk.value; apply(); });
+colInkHex.addEventListener('input',()=>{ if(hexValid(colInkHex.value)){ colInk.value=colInkHex.value; apply(); } });
+
+modeNatural.addEventListener('click',()=>{ tintMode=false; modeNatural.classList.add('on'); modeTint.classList.remove('on'); tintRow.style.display='none'; apply(); });
+modeTint.addEventListener('click',()=>{ tintMode=true; modeTint.classList.add('on'); modeNatural.classList.remove('on'); tintRow.style.display='flex'; apply(); });
+
+$('btnCopy').addEventListener('click', async ()=>{
+  try{ await navigator.clipboard.writeText(copyBadge.textContent); $('btnCopy').textContent='Đã copy ✓'; setTimeout(()=>$('btnCopy').textContent='Copy dòng gửi anh',1200);}catch{ prompt('Copy gửi anh:', copyBadge.textContent); }
+});
+$('btnReset').addEventListener('click', ()=>{
+  numCW.value=220; rangeCW.value=220; numCH.value=180; rangeCH.value=180;
+  numScaleW.value=100; rangeScaleW.value=100; numScaleH.value=100; rangeScaleH.value=100;
+  numIX.value=0; rangeIX.value=0; numIY.value=0; rangeIY.value=0;
+  rangeOpacity.value=100;
+  inpBtn.value='✨Khám phá✨'; fsBtn.value=20;
+  colText.value='#3b3226'; colTextHex.value='#3b3226';
+  rangeBX.value=0; rangeBY.value=0;
+  tintMode=false; modeNatural.classList.add('on'); modeTint.classList.remove('on'); tintRow.style.display='none';
+  apply();
+});
+apply();
+console.log('[CirclePreview] ready');
+</script>
+</body>
+</html>

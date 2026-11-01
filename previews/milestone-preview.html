@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Milestone Body Preview — Evoluthing</title>
+<link href="https://fonts.googleapis.com/css2?family=Fuzzy+Bubbles:wght@400;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:
+    radial-gradient(1200px 700px at 50% 30%, rgba(255,220,160,.10), transparent 60%),
+    radial-gradient(900px 600px at 78% 82%, rgba(120,70,40,.16), transparent 62%),
+    linear-gradient(160deg,#3a2c22 0%,#241a14 55%,#171009 100%);
+  font-family:Inter,system-ui,sans-serif;
+  display:flex;flex-direction:column;align-items:center;gap:16px;padding:18px;min-height:100vh;
+}
+h2{color:#e8c98a;font-family:"Playfair Display",serif;margin:0;text-align:center}
+.sub{color:#b8a894;font-size:13px;text-align:center;max-width:860px;line-height:1.5}
+.layout{display:flex;gap:18px;align-items:flex-start;justify-content:center;width:100%;max-width:1600px}
+.controls{display:flex;flex-direction:column;gap:14px;align-items:stretch;background:rgba(0,0,0,.22);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);width:360px;flex-shrink:0;position:sticky;top:18px;max-height:calc(100vh - 36px);overflow-y:auto}
+.col{display:flex;flex-direction:column;gap:8px;min-width:260px;flex:1}
+.col label{color:#e8c98a;font-size:13px;font-weight:600}
+.col textarea,.col input{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226;font-family:"Fuzzy Bubbles",cursive;font-size:15px;line-height:1.45;-webkit-text-stroke:.45px currentColor}
+.col textarea{height:86px;resize:vertical}
+.col input{height:40px;font-size:16px}
+.badge{font-family:Inter,sans-serif;font-size:12px;padding:5px 9px;border-radius:999px;background:#fdfaf3;color:#5a4632;border:1px solid #c9b99a;display:inline-block}
+.badge.warn{background:#fff1c7;color:#6b4a00;border-color:#e6c86a}
+.badge.over{background:#ffd1d1;color:#7a1e1e;border-color:#e58a8a}
+.btn{font-family:Inter,sans-serif;font-weight:700;background:#6b442b;color:#fdfaf3;border:none;border-radius:10px;padding:9px 16px;cursor:pointer}
+.btn:hover{background:#54331e}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* book replica — exact same as index.html (now 100vh-48px, not -280px) */
+.book{
+  position:relative;perspective:2400px;
+  filter:drop-shadow(0 40px 60px rgba(0,0,0,.55));
+  width:min(1200px, calc(100vw - 420px), calc((100vh - 48px) * 1200 / 820));
+  aspect-ratio:1200/820;
+  background:transparent;flex-shrink:0;
+}
+.page-block{position:absolute;inset:12px 16px 12px 16px;display:block;perspective:2400px;transform-style:preserve-3d;}
+.binding{position:absolute;top:0;bottom:0;left:50%;width:60px;transform:translateX(-50%);pointer-events:none;z-index:5;
+  background:linear-gradient(90deg,transparent 0%,rgba(90,70,45,.16) 42%,rgba(60,45,28,.30) 50%,rgba(90,70,45,.16) 58%,transparent 100%)}
+.leaf{position:absolute;top:0;bottom:0;width:50%;background:
+    repeating-linear-gradient(90deg, rgba(120,100,80,.05) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(180deg, rgba(120,100,80,.05) 0 1px, transparent 1px 28px),
+    linear-gradient(90deg,#efe6d4 0%,#f7f0e2 30%,#f9f3e6 100%);
+  overflow:hidden;backface-visibility:hidden;display:flex;flex-direction:column}
+.leaf-left{left:0;border-radius:6px 0 0 6px;border-right:1px dashed rgba(120,95,70,.22)}
+.leaf-right{right:0;border-radius:0 6px 6px 0}
+.leaf-inner{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;padding:44px 30px 40px}
+.leaf-left .leaf-inner{align-items:center;justify-content:center;gap:10px}
+.leaf-right .leaf-inner{justify-content:center;text-align:left}
+.left-meta{width:100%;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;margin-top:6px}
+.left-meta .mname{font-family:"Fuzzy Bubbles",cursive;font-size:26px;line-height:1.15;font-weight:400;-webkit-text-stroke:.45px currentColor;color:#2f251b;word-break:break-word}
+.left-meta .myear{font-family:"Fuzzy Bubbles",cursive;font-size:17px;color:#8a7a5f;font-weight:400;-webkit-text-stroke:.45px currentColor}
+.left-meta .wiki-source-wrap{margin-top:6px}
+.polaroid.portrait .photo{height:min(52vh,430px);width:auto;margin:0 auto}
+
+/* milestone styles — exact copy index.html:185-195 */
+.notes{font-family:"Fuzzy Bubbles",cursive;color:#3b3226;padding:0 4px 0 30px;width:100%}
+.notes .mname{font-size:30px;line-height:1.15;font-weight:400;-webkit-text-stroke:.7px currentColor;color:#2f251b;word-break:break-word}
+.notes .myear{font-size:18px;color:#8a7a5f;margin-top:2px;font-weight:400;-webkit-text-stroke:.45px currentColor}
+.notes .mrow{margin-top:12px;font-size:21px;line-height:1.45;word-break:break-word;white-space:pre-wrap;-webkit-text-stroke:.45px currentColor}
+.notes .mrow b{color:#5a4430;font-weight:700}
+.wiki-source-wrap{margin-top:14px;display:inline-flex;align-items:center;gap:6px;font-size:16px;color:#7a6953;font-family:"Fuzzy Bubbles",cursive;font-weight:400;-webkit-text-stroke:.45px currentColor}
+.wiki-label{font-family:"Fuzzy Bubbles",cursive;font-size:16px;color:#7a6953;font-weight:400;-webkit-text-stroke:.45px currentColor}
+.wiki-source{position:relative;display:inline-block;font-family:"Fuzzy Bubbles",cursive;font-size:16px;color:#1a73e8;text-decoration:none;padding:0 2px 4px;font-weight:400;-webkit-text-stroke:.45px currentColor}
+.blue-underline{position:absolute;left:0;right:0;bottom:-2px;width:100%;height:13px;object-fit:fill;pointer-events:none;opacity:.95;display:block}
+.polaroid-wrap{position:relative;width:min(100%,420px);display:flex;justify-content:center;transform:translateY(-40px)}
+.polaroid{background:#fbfbf4;padding:20px 12px 34px;box-shadow:0 10px 24px rgba(0,0,0,.28);transform:rotate(-1.2deg);position:relative;border:1px solid #eee;border-radius:2px;max-width:100%}
+.polaroid .photo{display:block;background:#e6ddc8;border:1px solid rgba(0,0,0,.15);border-radius:1px;max-width:100%;height:auto}
+.polaroid.landscape .photo{width:100%;aspect-ratio:4/3;object-fit:contain;background:#fbfbf4}
+.polaroid .caption{margin-top:6px;text-align:center;font-family:"Fuzzy Bubbles",cursive;font-size:18px;color:#4a4034;-webkit-text-stroke:.45px currentColor;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;line-height:1.35;padding:0 10px}
+.tape{position:absolute;width:78px;height:26px;top:-13px;left:50%;transform:translateX(-50%) rotate(-2deg);z-index:3;
+  --td:6px;
+  clip-path:polygon(0 0, var(--td) 22%, 0 44%, var(--td) 66%, 0 88%, 0 100%, 100% 100%, calc(100% - var(--td)) 78%, 100% 56%, calc(100% - var(--td)) 34%, 100% 12%, 100% 0, 0 0);
+  background:#dbcaa2;box-shadow:0 2px 7px rgba(0,0,0,.48),0 0 0 1px rgba(110,92,60,.30),inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(120,100,70,.30)}
+.tape::after{content:"";position:absolute;inset:0;clip-path:inherit;background:linear-gradient(100deg, transparent 16%, rgba(255,255,255,.55) 36%, transparent 50%, rgba(255,255,255,.32) 72%, transparent 88%)}
+.pageno{position:absolute;bottom:12px;right:18px;font-family:"Fuzzy Bubbles",cursive;font-size:18px;color:#a2947d;-webkit-text-stroke:.45px currentColor;pointer-events:none;z-index:6}
+.milestone-topbar{position:absolute;top:14px;right:18px;z-index:15;display:flex;align-items:center;gap:8px;max-width:calc(100% - 36px)}
+.milestone-topic{font-family:"Playfair Display",serif;font-size:17px;font-style:italic;font-weight:700;color:#6b5a44;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:1100px){
+  .layout{flex-direction:column;align-items:center}
+  .controls{width:min(92vw,420px);position:static;max-height:none}
+  .book{width:min(92vw,640px);aspect-ratio:auto;min-height:560px}
+  .page-block{position:relative;inset:auto;height:auto;display:block}
+  .leaf{position:relative;width:100%;height:auto}
+  .leaf-left{border-right:none;border-bottom:1px dashed rgba(120,95,70,.22)}
+  .leaf-inner{padding:40px 18px 28px}
+  .binding{display:none}
+}
+@media(max-width:760px){
+  .book{width:min(92vw,640px);aspect-ratio:auto;min-height:560px}
+  .page-block{position:relative;inset:auto;height:auto;display:block}
+  .leaf{position:relative;width:100%;height:auto}
+  .leaf-left{border-right:none;border-bottom:1px dashed rgba(120,95,70,.22)}
+  .leaf-inner{padding:40px 18px 28px}
+  .binding{display:none}
+}
+</style>
+</head>
+<body>
+  <h2>Milestone Preview — trái (ảnh + Name/Year/Source) + phải (What/Why)</h2>
+  <div class="sub">
+    Trái: polaroid <b>portrait max 430px</b> (<code>index.html:159</code>) + Name/Year/Source.<br>
+    Phải: body <code>.notes .mrow</code> (`index.html:188`). Ảnh dọc 630×940 — max 430px.
+  </div>
+
+  <div class="layout">
+  <div class="controls">
+    <div class="col">
+      <label>Name <span class="badge" id="cName">0</span></label>
+      <input id="inpName" value="Máy tính ENIAC">
+      <label>Year <span class="badge" id="cYear">0</span></label>
+      <input id="inpYear" value="1946 (80 năm trước)">
+      <label>Source</label>
+      <input id="inpWiki" value="Wikipedia" disabled style="opacity:.7">
+    </div>
+    <div class="col">
+      <label>What — 1-2 câu <span class="badge" id="cWhat">0</span> <label style="font-weight:400;font-size:11px;color:#b8a894"><input type="checkbox" id="chkWhatPrefix" checked> hiện “What —”</label></label>
+      <textarea id="inpWhat">Một cỗ máy khổng lồ nặng 30 tấn, chiếm cả căn phòng, dùng 18.000 bóng đèn điện tử để tính toán đạn đạo cho quân đội Mỹ.</textarea>
+      <label>Why — 1-2 câu <span class="badge" id="cWhy">0</span> <label style="font-weight:400;font-size:11px;color:#b8a894"><input type="checkbox" id="chkWhyPrefix" checked> hiện “Why —”</label></label>
+      <textarea id="inpWhy">Đây là lần đầu nhân loại có một “bộ não” tự động, mở đường cho mọi máy tính sau này — từ chiếc laptop của em đến điện thoại trong túi.</textarea>
+    </div>
+    <div class="col" style="min-width:220px;max-width:280px">
+      <div style="background:rgba(255,255,255,.08);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:13px;color:#e8c98a;font-weight:700">Cỡ chữ (px)</div>
+        <label style="font-size:12px;color:#e8c98a">Name: <input type="number" id="fsName" value="26" min="18" max="48" style="width:70px;padding:4px 6px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226"> px</label>
+        <label style="font-size:12px;color:#e8c98a">Year: <input type="number" id="fsYear" value="17" min="14" max="28" style="width:70px;padding:4px 6px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226"> px</label>
+        <label style="font-size:12px;color:#e8c98a">What: <input type="number" id="fsWhat" value="20" min="16" max="36" style="width:70px;padding:4px 6px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226"> px</label>
+        <label style="font-size:12px;color:#e8c98a">Why: <input type="number" id="fsWhy" value="20" min="16" max="36" style="width:70px;padding:4px 6px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226"> px</label>
+        <div style="font-size:11px;color:#b8a894;line-height:1.3">Mặc định: Name 26 / Year 17 / What+Why 20 (đã confirm). Sửa số rồi xem sổ cập nhật ngay.</div>
+      </div>
+      <div style="background:rgba(255,255,255,.08);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:13px;color:#e8c98a;font-weight:700">Vị trí cả khung (nhích nguyên cụm)</div>
+        <label style="font-size:12px;color:#e8c98a">Nhích dọc: <input type="number" id="wrapOffset" value="-40" min="-60" max="60" step="1" style="width:70px;padding:4px 6px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226"> px <span style="font-size:10px;color:#b8a894">- lên / + xuống</span></label>
+        <div style="font-size:11px;color:#b8a894;line-height:1.3">Cả cụm <b>ảnh + khung trắng + băng dính</b> di chuyển cùng nhau. Đã set <b>-40</b> theo yêu cầu.</div>
+        <span class="badge" id="wrapBadge" style="font-size:11px">Offset -40px — copy gửi anh: -40</span>
+      </div>
+      <div style="background:rgba(255,255,255,.08);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;gap:6px;opacity:.85">
+        <div style="font-size:12px;color:#e8c98a;font-weight:600">Tinh chỉnh khung (ít dùng)</div>
+        <label style="font-size:11px;color:#b8a894">Top pad: <input type="number" id="padTop" value="10" min="0" max="30" step="1" style="width:60px;padding:3px 5px;border-radius:6px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226"> px</label>
+        <label style="font-size:11px;color:#b8a894">Bottom pad: <input type="number" id="padBottom" value="18" min="6" max="40" step="1" style="width:60px;padding:3px 5px;border-radius:6px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226"> px</label>
+        <label style="font-size:11px;color:#b8a894">Tape top: <input type="number" id="tapeTop" value="-13" min="-25" max="10" step="1" style="width:60px;padding:3px 5px;border-radius:6px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226"> px</label>
+        <span class="badge" id="posBadge" style="font-size:10px">10 / 18 / -13</span>
+        <span id="codeSnippet" style="display:none">padding:10px 12px 18px; tape:-13px</span>
+      </div>
+      <div style="background:rgba(255,255,255,.08);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:12px;color:#e8c98a;font-weight:600">Body padding ngang — giới hạn chiều rộng chữ</div>
+        <label style="font-size:11px;color:#b8a894">Trái: <input type="number" id="bodyPadL" value="30" min="0" max="60" step="1" style="width:60px;padding:3px 5px;border-radius:6px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226"> px</label>
+        <label style="font-size:11px;color:#b8a894">Phải: <input type="number" id="bodyPadR" value="4" min="0" max="60" step="1" style="width:60px;padding:3px 5px;border-radius:6px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226"> px</label>
+        <span class="badge" id="bodyPadBadge" style="font-size:10px">30 / 4</span>
+        <div style="font-size:10px;color:#b8a894;line-height:1.3">Áp lên <code>.notes</code> (body phải). Tăng số → chữ hẹp lại, lề rộng ra. Copy: <code id="bodyPadCode">padding:0 4px 0 30px</code></div>
+      </div>
+      <div class="row"><button class="btn" id="btnFill">Fill max (đầy trang)</button></div>
+      <div class="row"><button class="btn" id="btnClear" style="background:#3b3226">Xóa What/Why</button></div>
+      <div class="row"><button class="btn" id="btnLong" style="background:#8a6a3f">Test tràn (quá dài)</button></div>
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px">
+        <span class="badge" id="totalBadge">—</span>
+        <span class="badge" id="fitBadge">—</span>
+        <span class="badge" id="hintBadge" style="font-size:11px;line-height:1.4;background:#fff8e6">Mẹo: What+Why mỗi cái 1-2 câu (~120-180 ký tự) là vừa. Quá 400 ký tự tổng sẽ tràn.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="book">
+    <div class="page-block">
+      <div class="binding"></div>
+      <div class="leaf leaf-left"><div class="leaf-inner" id="leafLeftInner">
+        <div class="polaroid-wrap" id="polaroidWrap"><div class="tape"></div><div class="polaroid portrait" id="polaroidPreview"><img class="photo" id="photoPreview" src="https://picsum.photos/seed/evoluthing-portrait/630/940" alt="ENIAC portrait sample (630x940)" onload="this.closest('.polaroid').classList.toggle('portrait', this.naturalHeight > this.naturalWidth); this.closest('.polaroid').classList.toggle('landscape', this.naturalHeight <= this.naturalWidth)"></div></div>
+        <div class="left-meta" id="leftMeta">
+          <div class="mname" id="pvName">Máy tính ENIAC</div>
+          <div class="myear" id="pvYear">1946 (80 năm trước)</div>
+          <span class="wiki-source-wrap"><span class="wiki-label">Source:</span><a class="wiki-source" href="https://en.wikipedia.org/wiki/ENIAC" target="_blank">Wikipedia<img class="blue-underline" src="../assets/blue-underline.png" alt=""></a></span>
+        </div>
+      </div></div>
+      <div class="leaf leaf-right">
+        <div class="leaf-inner" id="leafRightInner">
+          <div class="milestone-topbar"><div class="milestone-topic">Sự tiến hóa của Máy tính</div></div>
+          <div class="notes" id="notesPreview">
+            <div class="mrow" id="pvWhat"><b>What —</b> Một cỗ máy khổng lồ nặng 30 tấn, chiếm cả căn phòng, dùng 18.000 bóng đèn điện tử để tính toán đạn đạo cho quân đội Mỹ.</div>
+            <div class="mrow" id="pvWhy"><b>Why —</b> Đây là lần đầu nhân loại có một “bộ não” tự động, mở đường cho mọi máy tính sau này — từ chiếc laptop của em đến điện thoại trong túi.</div>
+          </div>
+          <div class="pageno">Trang 2 / 7</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+<script>
+const $ = id=>document.getElementById(id);
+const inpName=$('inpName'), inpYear=$('inpYear'), inpWhat=$('inpWhat'), inpWhy=$('inpWhy');
+const pvName=$('pvName'), pvYear=$('pvYear'), pvWhat=$('pvWhat'), pvWhy=$('pvWhy');
+const cName=$('cName'), cYear=$('cYear'), cWhat=$('cWhat'), cWhy=$('cWhy'), totalBadge=$('totalBadge'), fitBadge=$('fitBadge');
+const leafLeftInner=$('leafLeftInner'), leafRightInner=$('leafRightInner'), notesPreview=$('notesPreview'), leftMeta=$('leftMeta'), photoPreview=$('photoPreview');
+const chkWhatPrefix=$('chkWhatPrefix'), chkWhyPrefix=$('chkWhyPrefix');
+const fsName=$('fsName'), fsYear=$('fsYear'), fsWhat=$('fsWhat'), fsWhy=$('fsWhy');
+const padTop=$('padTop'), padBottom=$('padBottom'), tapeTop=$('tapeTop'), codeSnippet=$('codeSnippet'), posBadge=$('posBadge');
+const wrapOffset=$('wrapOffset'), wrapBadge=$('wrapBadge');
+const bodyPadL=$('bodyPadL'), bodyPadR=$('bodyPadR'), bodyPadBadge=$('bodyPadBadge'), bodyPadCode=$('bodyPadCode');
+const polaroidEl=$('polaroidPreview'), tapeEl=document.querySelector('.polaroid-wrap .tape'), polaroidWrap=$('polaroidWrap');
+
+const SAMPLE_LONG_WHAT = "Một cỗ máy khổng lồ nặng 30 tấn, chiếm cả một căn phòng rộng 167m² tại Đại học Pennsylvania, dùng tới 18.000 bóng đèn điện tử, 7.200 diode và 1.500 rơ-le để tính toán quỹ đạo đạn đạo cho quân đội Mỹ trong Thế chiến II, tiêu thụ lượng điện đủ thắp sáng cả một khu phố.";
+const SAMPLE_LONG_WHY = "Đây là lần đầu nhân loại có một “bộ não” tự động thực sự — không còn tính bằng tay, không còn bảng logarit. ENIAC đã chứng minh máy móc có thể tư duy logic, mở đường cho transistor, cho chip, cho mọi laptop, điện thoại và cả AI mà em đang dùng hôm nay.";
+const SAMPLE_SHORT_WHAT = "Một cỗ máy khổng lồ nặng 30 tấn, chiếm cả căn phòng, dùng 18.000 bóng đèn điện tử để tính toán đạn đạo cho quân đội Mỹ.";
+const SAMPLE_SHORT_WHY = "Đây là lần đầu nhân loại có một “bộ não” tự động, mở đường cho mọi máy tính sau này — từ chiếc laptop của em đến điện thoại trong túi.";
+
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function nl2br(s){ return esc(s).replace(/\n/g,'<br>'); }
+
+function applyFontSizes(){
+  pvName.style.fontSize = (parseInt(fsName.value)||26) + "px";
+  pvYear.style.fontSize = (parseInt(fsYear.value)||17) + "px";
+  pvWhat.style.fontSize = (parseInt(fsWhat.value)||20) + "px";
+  pvWhy.style.fontSize = (parseInt(fsWhy.value)||20) + "px";
+}
+function applyBodyPadding(){
+  const l = parseInt(bodyPadL && bodyPadL.value);
+  const r = parseInt(bodyPadR && bodyPadR.value);
+  const lv = isNaN(l) ? 4 : l;
+  const rv = isNaN(r) ? 4 : r;
+  if(notesPreview) notesPreview.style.padding = `0 ${rv}px 0 ${lv}px`;
+  if(bodyPadBadge) bodyPadBadge.textContent = `${lv} / ${rv}`;
+  if(bodyPadCode) bodyPadCode.textContent = `padding:0 ${rv}px 0 ${lv}px`;
+}
+function applyPolaroidPos(){
+  const t = parseInt(padTop.value);
+  const b = parseInt(padBottom.value);
+  const tp = parseInt(tapeTop.value);
+  const off = parseInt(wrapOffset.value);
+  if(!isNaN(t) && polaroidEl) polaroidEl.style.paddingTop = t + "px";
+  if(!isNaN(b) && polaroidEl) polaroidEl.style.paddingBottom = b + "px";
+  if(!isNaN(tp) && tapeEl) tapeEl.style.top = tp + "px";
+  if(polaroidWrap) polaroidWrap.style.transform = isNaN(off) ? "" : `translateY(${off}px)`;
+  if(codeSnippet) codeSnippet.textContent = `padding:${isNaN(t)?10:t}px 12px ${isNaN(b)?18:b}px; tape:${isNaN(tp)?-13:tp}px`;
+  if(posBadge) posBadge.textContent = `${isNaN(t)?10:t} / ${isNaN(b)?18:b} / ${isNaN(tp)?-13:tp}`;
+  if(wrapBadge) wrapBadge.textContent = `Offset ${isNaN(off)?0:off}px — copy gửi anh: ${isNaN(off)?0:off}`;
+}
+
+function update(){
+  applyFontSizes();
+  applyBodyPadding();
+  applyPolaroidPos();
+  const nameV = inpName.value.trim();
+  const yearV = inpYear.value.trim();
+  const whatV = inpWhat.value.trim();
+  const whyV = inpWhy.value.trim();
+  pvName.textContent = nameV || "—";
+  pvYear.textContent = yearV || "—";
+  const whatPrefix = chkWhatPrefix.checked ? "<b>What —</b> " : "";
+  const whyPrefix = chkWhyPrefix.checked ? "<b>Why —</b> " : "";
+  pvWhat.innerHTML = whatPrefix + (whatV ? nl2br(whatV) : (chkWhatPrefix.checked ? "<span style='opacity:.4'>trống</span>" : "<span style='opacity:.4'>(trống — đã ẩn prefix)</span>"));
+  pvWhy.innerHTML = whyPrefix + (whyV ? nl2br(whyV) : (chkWhyPrefix.checked ? "<span style='opacity:.4'>trống</span>" : "<span style='opacity:.4'>(trống — đã ẩn prefix)</span>"));
+
+  const ln=c=>c.length;
+  cName.textContent = ln(nameV) + " ký tự";
+  cYear.textContent = ln(yearV) + " ký tự";
+  cWhat.textContent = ln(whatV) + " ký tự";
+  cWhy.textContent = ln(whyV) + " ký tự";
+  cWhat.className = ln(whatV)>180 ? "badge over" : ln(whatV)>140 ? "badge warn" : "badge";
+  cWhy.className = ln(whyV)>180 ? "badge over" : ln(whyV)>140 ? "badge warn" : "badge";
+
+  const total = ln(whatV)+ln(whyV);
+  totalBadge.textContent = "What+Why: " + total + " ký tự" + (total? " • " + (whatV+whyV).split(/\s+/).filter(Boolean).length + " từ" : "");
+
+  requestAnimationFrame(()=>{
+    const leftOver = leafLeftInner.scrollHeight > leafLeftInner.clientHeight + 2;
+    const rightOver = notesPreview.scrollHeight > leafRightInner.clientHeight + 2;
+    if(leftOver || rightOver){
+      const over = Math.max(leftOver ? leafLeftInner.scrollHeight - leafLeftInner.clientHeight : 0, rightOver ? notesPreview.scrollHeight - leafRightInner.clientHeight : 0);
+      const side = leftOver && rightOver ? "2 trang" : leftOver ? "trái" : "phải";
+      fitBadge.textContent = "⚠ TRÀN " + side + " +" + over + "px";
+      fitBadge.className = "badge over";
+      totalBadge.className = "badge over";
+    } else {
+      const remainL = leafLeftInner.clientHeight - leafLeftInner.scrollHeight;
+      const remainR = leafRightInner.clientHeight - notesPreview.scrollHeight;
+      const remain = Math.min(remainL, remainR);
+      fitBadge.textContent = remain < 30 ? "✓ Vừa đầy (trái " + remainL + "px / phải " + remainR + "px)" : "✓ Vừa trang (trái " + remainL + "px / phải " + remainR + "px trống)";
+      fitBadge.className = remain < 30 ? "badge warn" : "badge";
+      totalBadge.className = "badge";
+    }
+    // log max heights
+    if(photoPreview && photoPreview.naturalHeight){
+      console.log("[Left] photo", photoPreview.naturalWidth+"x"+photoPreview.naturalHeight, "display", photoPreview.clientWidth+"x"+photoPreview.clientHeight, "polaroid", document.getElementById('polaroidPreview').clientHeight+"px");
+    }
+  });
+}
+$('btnFill').onclick=()=>{ inpWhat.value=SAMPLE_SHORT_WHAT; inpWhy.value=SAMPLE_SHORT_WHY; update(); };
+$('btnClear').onclick=()=>{ inpWhat.value=""; inpWhy.value=""; update(); };
+$('btnLong').onclick=()=>{ inpWhat.value=SAMPLE_LONG_WHAT; inpWhy.value=SAMPLE_LONG_WHY; update(); };
+[inpName,inpYear,inpWhat,inpWhy].forEach(el=>el.addEventListener('input', update));
+[chkWhatPrefix, chkWhyPrefix].forEach(el=>el.addEventListener('change', update));
+[fsName, fsYear, fsWhat, fsWhy].forEach(el=>el.addEventListener('input', update));
+[padTop, padBottom, tapeTop, wrapOffset].forEach(el=>el.addEventListener('input', update));
+[bodyPadL, bodyPadR].forEach(el=>el && el.addEventListener('input', update));
+update();
+console.log("[Milestone] short What", SAMPLE_SHORT_WHAT.length, "Why", SAMPLE_SHORT_WHY.length, "total", SAMPLE_SHORT_WHAT.length+SAMPLE_SHORT_WHY.length);
+console.log("[Milestone] long What", SAMPLE_LONG_WHAT.length, "Why", SAMPLE_LONG_WHY.length, "total", SAMPLE_LONG_WHAT.length+SAMPLE_LONG_WHY.length);
+</script>
+</body>
+</html>

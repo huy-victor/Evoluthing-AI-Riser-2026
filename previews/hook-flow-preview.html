@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hook Flow Preview — Evoluthing</title>
+<link href="https://fonts.googleapis.com/css2?family=Fuzzy+Bubbles:wght@400;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:
+    radial-gradient(1200px 700px at 50% 30%, rgba(255,220,160,.10), transparent 60%),
+    radial-gradient(900px 600px at 78% 82%, rgba(120,70,40,.16), transparent 62%),
+    linear-gradient(160deg,#3a2c22 0%,#241a14 55%,#171009 100%);
+  font-family:Inter,system-ui,sans-serif;
+  display:flex;flex-direction:column;align-items:center;gap:16px;padding:18px;min-height:100vh;
+}
+h2{color:#e8c98a;font-family:"Playfair Display",serif;margin:0;text-align:center}
+.sub{color:#b8a894;font-size:13px;text-align:center;max-width:860px;line-height:1.5}
+.sub code{background:rgba(255,255,255,.1);padding:1px 6px;border-radius:6px;color:#e8c98a}
+.layout{display:flex;gap:18px;align-items:flex-start;justify-content:center;width:100%;max-width:1600px}
+.controls{display:flex;flex-direction:column;gap:14px;align-items:stretch;background:rgba(0,0,0,.22);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);width:360px;flex-shrink:0;position:sticky;top:18px;max-height:calc(100vh - 36px);overflow-y:auto}
+.controls label{color:#e8c98a;font-size:13px;font-weight:600}
+.ctrl-group{background:rgba(255,255,255,.07);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.10);display:flex;flex-direction:column;gap:8px}
+.ctrl-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ctrl-row input[type=range]{flex:1}
+.badge{font-family:Inter,sans-serif;font-size:12px;padding:5px 9px;border-radius:999px;background:#fdfaf3;color:#5a4632;border:1px solid #c9b99a;display:inline-block}
+.badge.warn{background:#fff1c7;color:#6b4a00;border-color:#e6c86a}
+.badge.over{background:#ffd1d1;color:#7a1e1e;border-color:#e58a8a}
+.badge.dim{background:rgba(255,255,255,.08);color:#b8a894;border-color:rgba(255,255,255,.12)}
+.btn{font-family:Inter,sans-serif;font-weight:700;background:#6b442b;color:#fdfaf3;border:none;border-radius:10px;padding:9px 16px;cursor:pointer}
+.btn:hover{background:#54331e}
+.btn.secondary{background:#3b3226}
+.toggle{display:flex;gap:6px}
+.toggle button{flex:1;padding:7px 8px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;color:#5a4632;font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.toggle button.active{background:#6b442b;color:#fdfaf3;border-color:#6b442b}
+select.ctrl-select{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226;font-family:Inter,sans-serif;font-size:13px}
+
+/* book replica — exact same as index.html 1200x820 */
+.book{
+  position:relative;perspective:2400px;
+  filter:drop-shadow(0 40px 60px rgba(0,0,0,.55));
+  width:min(1200px, calc(100vw - 420px), calc((100vh - 48px) * 1200 / 820));
+  aspect-ratio:1200/820;
+  background:transparent;flex-shrink:0;
+}
+.page-block{position:absolute;inset:12px 16px 12px 16px;display:block;perspective:2400px;transform-style:preserve-3d;}
+.binding{position:absolute;top:0;bottom:0;left:50%;width:60px;transform:translateX(-50%);pointer-events:none;z-index:5;
+  background:linear-gradient(90deg,transparent 0%,rgba(90,70,45,.16) 42%,rgba(60,45,28,.30) 50%,rgba(90,70,45,.16) 58%,transparent 100%)}
+.leaf{position:absolute;top:0;bottom:0;width:50%;background:
+    repeating-linear-gradient(90deg, rgba(120,100,80,.05) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(180deg, rgba(120,100,80,.05) 0 1px, transparent 1px 28px),
+    linear-gradient(90deg,#efe6d4 0%,#f7f0e2 30%,#f9f3e6 100%);
+  overflow:hidden;backface-visibility:hidden;display:flex;flex-direction:column}
+.leaf-left{left:0;border-radius:6px 0 0 6px;border-right:1px dashed rgba(120,95,70,.22)}
+.leaf-right{right:0;border-radius:0 6px 6px 0}
+.leaf-inner{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;padding:44px 30px 40px}
+.leaf-left .leaf-inner{align-items:center;justify-content:center}
+.leaf-right .leaf-inner{justify-content:center;text-align:left}
+.pageno{position:absolute;bottom:12px;right:18px;font-family:"Fuzzy Bubbles",cursive;font-size:18px;color:#a2947d;-webkit-text-stroke:.45px currentColor;pointer-events:none;z-index:6}
+
+/* hook left/right — copied from index.html */
+.hook-left{display:flex;align-items:center;justify-content:center;height:100%;width:100%;position:relative}
+.hook-svg{position:absolute;inset:0;width:100%;height:100%}
+.hook-right{display:flex;flex-direction:column;justify-content:center;height:100%;overflow:hidden;padding:0 6px}
+.hook-sapo{font-family:"Fuzzy Bubbles",cursive;font-size:24px;line-height:1.65;color:#3b3226;font-weight:400;-webkit-text-stroke:.45px currentColor;opacity:.92}
+.hook-sapo::first-letter{font-size:34px;color:#6b442b}
+.hook-nodes{position:absolute;inset:0;pointer-events:none}
+.hook-node{position:absolute;display:flex;align-items:center;gap:7px;opacity:0;animation:hookNodeIn .5s ease-out forwards}
+@keyframes hookNodeIn{from{opacity:0;transform:translate(calc(-50% + var(--dir,0px)), -50%) scale(.96)}to{opacity:1;transform:translate(calc(-50% + var(--dir,0px)), -50%) scale(1)}}
+
+/* hook photo — variable size, orientation-aware, 2 styles */
+.hook-node .hook-photo{object-fit:cover;background:#fbfbf4;border:1px solid rgba(0,0,0,.18);box-shadow:0 3px 8px rgba(0,0,0,.28);transform:rotate(-2deg);display:block}
+.hook-node.right .hook-photo{transform:rotate(2deg)}
+/* plain sizes via CSS vars set by JS */
+.hook-node.plain .hook-photo.landscape{width:var(--w-land);height:var(--h-land)}
+.hook-node.plain .hook-photo.portrait{width:var(--w-port);height:var(--h-port)}
+/* polaroid mini — white frame */
+.hook-polaroid{background:#fbfbf4;padding:5px 5px 10px;box-shadow:0 4px 12px rgba(0,0,0,.28);border:1px solid #e8e0d0;border-radius:1px;transform:rotate(-2deg);display:flex;align-items:center;justify-content:center}
+.hook-node.right .hook-polaroid{transform:rotate(2deg)}
+.hook-polaroid .hook-photo{border:none;box-shadow:none;transform:none !important}
+.hook-polaroid .hook-photo.landscape{width:var(--w-land-p);height:var(--h-land-p)}
+.hook-polaroid .hook-photo.portrait{width:var(--w-port-p);height:var(--h-port-p)}
+.hook-node .hook-photo-fallback{display:grid;place-items:center;font-size:22px;background:#e6ddc8;border:1px solid rgba(0,0,0,.15)}
+
+.hook-node .hook-year{font-family:"Fuzzy Bubbles",cursive;font-size:15px;font-weight:400;-webkit-text-stroke:.45px currentColor;color:#8a7a5f;white-space:nowrap}
+.hook-node .hook-year.small{font-size:13px}
+
+/* right leaf decor */
+.milestone-topbar{position:absolute;top:14px;right:18px;z-index:5;display:flex;align-items:center;gap:8px;max-width:calc(100% - 36px)}
+.milestone-topic{font-family:"Playfair Display",serif;font-size:17px;font-style:italic;font-weight:700;color:#6b5a44;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+@media(max-width:1100px){
+  .layout{flex-direction:column;align-items:center}
+  .controls{width:min(92vw,420px);position:static;max-height:none}
+  .book{width:min(92vw,640px);aspect-ratio:auto;min-height:560px}
+  .page-block{position:relative;inset:auto;height:auto;display:block}
+  .leaf{position:relative;width:100%;height:auto}
+  .leaf-left{border-right:none;border-bottom:1px dashed rgba(120,95,70,.22)}
+  .leaf-inner{padding:40px 18px 28px}
+  .binding{display:none}
+}
+</style>
+</head>
+<body>
+  <h2>Hook Flow Preview — dòng chảy trái của Sapo</h2>
+  <div class="sub">
+    Trang trái = sông nét đứt + ảnh so le trái/phải kèm năm. Kéo <b>Cỡ ảnh</b> để chỉnh — ảnh <b>dọc tự dọc, ngang tự ngang</b> (detect theo ảnh gốc). Toggle để so <b>Ảnh trần</b> vs <b>Polaroid mini</b>. Chọn <b>Số mốc 5/6/7</b> để xem độ chật. Copy dòng <code id="copyCode">—</code> gửi anh.
+  </div>
+
+  <div class="layout">
+    <div class="controls">
+      <div class="ctrl-group">
+        <label for="sizeRange">Cỡ ảnh (cạnh dài) — 1 slider duy nhất</label>
+        <div class="ctrl-row">
+          <input type="range" id="sizeRange" min="56" max="140" step="4" value="96">
+          <span class="badge" id="sizeBadge">96px</span>
+        </div>
+        <div style="font-size:11px;color:#b8a894;line-height:1.4">
+          Ngang: <span id="landLabel">96 × 72</span> (4:3) &nbsp;|&nbsp; Dọc: <span id="portLabel">72 × 96</span> (3:4) — dài = slider, ngắn = dài × 0.75
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <span class="badge" id="fitBadge">—</span>
+          <span class="badge dim" id="offsetBadge">offset 46px</span>
+        </div>
+        <div style="font-size:11px;color:#e8c98a;line-height:1.35;background:rgba(232,201,138,.10);padding:6px 8px;border-radius:8px;border:1px dashed rgba(232,201,138,.25)">
+          Gợi ý: 72 = như cũ nhỏ, 96 = vừa (đề xuất), 112-128 = to rõ, 140 = max test tràn.
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <label>Kiểu khung</label>
+        <div class="toggle">
+          <button id="btnPlain" class="active">Ảnh trần</button>
+          <button id="btnPolaroid">Polaroid mini</button>
+        </div>
+        <div style="font-size:11px;color:#b8a894;line-height:1.4">
+          Ảnh trần: viền 1px + shadow như hiện tại. Polaroid mini: thêm khung trắng 5px + shadow đậm hơn.
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <label for="countSelect">Số mốc trên sông</label>
+        <select id="countSelect" class="ctrl-select">
+          <option value="5">5 mốc (thưa)</option>
+          <option value="6" selected>6 mốc (mặc định hiện tại)</option>
+          <option value="7">7 mốc (dày — dễ chật)</option>
+        </select>
+        <div style="font-size:11px;color:#b8a894">Dùng để test khi AI trả 5-7 milestone thực tế.</div>
+      </div>
+
+      <div class="ctrl-group">
+        <label>Bộ ảnh test</label>
+        <div class="toggle">
+          <button id="btnSetMixed" class="active">Mixed dọc/ngang</button>
+          <button id="btnSetReal">Ảnh thật Wiki</button>
+        </div>
+        <div style="font-size:11px;color:#b8a894">Mixed: xen 4:3 và 3:4 rõ để thấy khung. Wiki: thumb EN/Cà phê thật.</div>
+      </div>
+
+      <div class="ctrl-group">
+        <div style="display:flex;gap:8px">
+          <button class="btn" id="btnCopy" style="flex:1">Copy dòng gửi anh</button>
+          <button class="btn secondary" id="btnReset" style="flex:1">Reset 96</button>
+        </div>
+        <span class="badge" id="copyBadge" style="font-size:11px;word-break:break-all">—</span>
+        <div style="font-size:11px;color:#b8a894;line-height:1.4">Copy sẽ ra dạng: <code>size:96 plain 5 mốc — land 96x72 port 72x96 offset ~58</code></div>
+      </div>
+
+      <div class="ctrl-group" style="opacity:.9">
+        <label>So với index.html hiện tại</label>
+        <div style="font-size:12px;color:#b8a894;line-height:1.45">
+          Hiện tại <code>index.html:210</code> fix <code>56×44</code> mọi ảnh → nhỏ khó nhìn, không phân biệt dọc/ngang.<br>
+          Preview này cho em kéo tới mức ưng rồi báo, anh sẽ thay vars vào <code>index.html:208-214</code> + thêm <code>fixHookPhotoOrientation</code> như <code>milestone</code>.
+        </div>
+      </div>
+    </div>
+
+    <div class="book" id="book">
+      <div class="page-block">
+        <div class="binding"></div>
+        <div class="leaf leaf-left"><div class="leaf-inner" id="leafLeftInner">
+          <div class="hook-left" id="hookLeft">
+            <svg class="hook-svg" id="hookSvg" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <defs>
+                <mask id="riverMask"><rect x="0" y="0" width="100" height="0" fill="#fff"><animate attributeName="height" from="0" to="100" dur="1.6s" fill="freeze"/></rect></mask>
+              </defs>
+              <path id="hookRiverPath" d="M50,-2 C20,15 82,18 50,34 C18,50 82,52 50,68 C18,84 82,86 50,102" fill="none" stroke="#8a7a5f" stroke-width="1.4" stroke-dasharray="3 3.4" stroke-linecap="round" vector-effect="non-scaling-stroke" mask="url(#riverMask)" opacity="0.72"/>
+            </svg>
+            <div class="hook-nodes" id="hookNodes"></div>
+          </div>
+        </div></div>
+        <div class="leaf leaf-right"><div class="leaf-inner">
+          <div class="milestone-topbar"><div class="milestone-topic">Sự tiến hóa của Cà phê</div></div>
+          <div class="hook-right"><div class="hook-sapo" id="hookSapoPreview">Bạn có bao giờ tự hỏi, một hạt cà phê nhỏ bé đã đi qua bao nhiêu thế kỷ để đến với tách cà phê mỗi sáng? Từ rừng hoang Ethiopia đến quán Ả Rập trầm mặc rồi vượt đại dương sang châu Âu, cà phê đã dệt nên một hành trình vừa đắng, vừa thơm, vừa thức tỉnh cả nhân loại.</div></div>
+          <div class="pageno">Trang 1 / 7</div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const $ = id => document.getElementById(id);
+const hookLeft = $('hookLeft'), hookNodes = $('hookNodes'), hookRiverPath = $('hookRiverPath');
+const sizeRange = $('sizeRange'), sizeBadge = $('sizeBadge'), landLabel = $('landLabel'), portLabel = $('portLabel');
+const btnPlain = $('btnPlain'), btnPolaroid = $('btnPolaroid');
+const countSelect = $('countSelect'), btnSetMixed = $('btnSetMixed'), btnSetReal = $('btnSetReal');
+const fitBadge = $('fitBadge'), offsetBadge = $('offsetBadge'), copyBadge = $('copyBadge'), copyCode = $('copyCode');
+
+let styleMode = 'plain'; // plain | polaroid
+let imageSet = 'mixed'; // mixed | real
+let currentSize = parseInt(sizeRange.value,10) || 96;
+
+// Mixed set: alternating 4:3 land and 3:4 port, years as screenshot + wiki-like
+const MIXED_FULL = [
+  { year:'1976',        w:400,h:300, seed:'evoluthing-1976-land', label:'1976 land 4:3' },
+  { year:'1984',        w:300,h:400, seed:'evoluthing-1984-port', label:'1984 port 3:4' },
+  { year:'1997-2001',   w:480,h:360, seed:'evoluthing-1997-land', label:'1997 land' },
+  { year:'2007',        w:320,h:420, seed:'evoluthing-2007-port', label:'2007 port' },
+  { year:'2010 trở đi', w:440,h:330, seed:'evoluthing-2010-land', label:'2010 land' },
+  { year:'2020',        w:360,h:480, seed:'evoluthing-2020-port', label:'2020 port' },
+  { year:'2024',        w:500,h:375, seed:'evoluthing-2024-land', label:'2024 land' },
+];
+// Real wiki thumbs — some enwiki thumbs are portrait (ENIAC) some landscape
+const REAL_FULL = [
+  { year:'1976',        url:'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/ENIAC.jpg/400px-ENIAC.jpg', w:400,h:300 },
+  { year:'1984',        url:'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Apple_Macintosh_128k.jpg/300px-Apple_Macintosh_128k.jpg', w:300,h:500 },
+  { year:'1997-2001',   url:'https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/IPod_1G.png/320px-IPod_1G.png', w:320,h:400 },
+  { year:'2007',        url:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a5/IPhone_First_Gen.jpg/320px-IPhone_First_Gen.jpg', w:320,h:420 },
+  { year:'2010 trở đi', url:'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Coffee_beans.jpg/400px-Coffee_beans.jpg', w:400,h:300 },
+  { year:'2020',        url:'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/300px-Python-logo-notext.svg.png', w:300,h:300 },
+  { year:'2024',        url:'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Skylab.jpg/400px-Skylab.jpg', w:400,h:300 },
+];
+
+function getActiveData(){
+  const src = imageSet === 'mixed' ? MIXED_FULL : REAL_FULL;
+  const n = parseInt(countSelect.value,10) || 6;
+  return src.slice(0,n);
+}
+function picsumUrl(seed,w,h){
+  // keep picsum stable per seed
+  return `https://picsum.photos/seed/${seed}/${w}/${h}`;
+}
+
+function updateVars(){
+  const s = currentSize;
+  const short = Math.round(s * 0.75);
+  // plain
+  document.documentElement.style.setProperty('--w-land', s + 'px');
+  document.documentElement.style.setProperty('--h-land', short + 'px');
+  document.documentElement.style.setProperty('--w-port', short + 'px');
+  document.documentElement.style.setProperty('--h-port', s + 'px');
+  // polaroid inner photo is 2*5px padding smaller visually, but keep same photo size for simplicity;
+  // we subtract 2*1? keep same so outer polaroid is +10w/+15h
+  document.documentElement.style.setProperty('--w-land-p', s + 'px');
+  document.documentElement.style.setProperty('--h-land-p', short + 'px');
+  document.documentElement.style.setProperty('--w-port-p', short + 'px');
+  document.documentElement.style.setProperty('--h-port-p', s + 'px');
+  sizeBadge.textContent = s + 'px';
+  landLabel.textContent = s + ' × ' + short;
+  portLabel.textContent = short + ' × ' + s;
+}
+
+function positionHookNodes(){
+  const path = hookRiverPath, wrap = hookNodes, container = hookLeft;
+  if(!path || !wrap || !container) return;
+  const N = wrap.children.length;
+  if(!N) return;
+  const total = path.getTotalLength();
+  const W = container.clientWidth || 300;
+  // offset depends on size: larger photo needs more clearance
+  const photoHalf = currentSize * 0.5; // max half width
+  const autoOffset = Math.max(46, W * 0.17, photoHalf + 18);
+  offsetBadge.textContent = 'offset ' + Math.round(autoOffset) + 'px (W ' + Math.round(W) + ')';
+  const drawDur = 1.6;
+  // update each node position + animation delay already set
+  Array.from(wrap.children).forEach((node,i)=>{
+    const t = (i + 0.5) / N;
+    const pt = path.getPointAtLength(total * t);
+    const dir = (i % 2 === 0) ? -1 : 1;
+    node.style.left = pt.x + '%';
+    node.style.top = pt.y + '%';
+    node.style.setProperty('--dir', (dir * autoOffset) + 'px');
+    node.style.transform = `translate(calc(-50% + ${dir * autoOffset}px), -50%)`;
+    node.style.animationDelay = (0.18 + t * drawDur) + 's';
+  });
+  checkOverflow(autoOffset);
+  updateCopyLine(autoOffset);
+}
+
+function checkOverflow(offset){
+  requestAnimationFrame(()=>{
+    const leafInner = document.getElementById('leafLeftInner');
+    const leftOver = leafInner.scrollHeight > leafInner.clientHeight + 2;
+    const maxH = Math.max(...Array.from(hookNodes.children).map(n=>n.getBoundingClientRect().height));
+    const totalH = hookNodes.children.length * maxH;
+    // simple heuristic: if total nodes height + gaps > leaf inner height, warn
+    const isOver = totalH > leafInner.clientHeight * 0.88;
+    const N = hookNodes.children.length;
+    if(isOver){
+      const over = Math.round(totalH - leafInner.clientHeight*0.88);
+      fitBadge.textContent = '⚠ Có thể chật với ' + N + ' mốc (cỡ ' + currentSize + 'px)';
+      fitBadge.className = 'badge over';
+    } else {
+      const remain = Math.round(leafInner.clientHeight - totalH);
+      fitBadge.textContent = N + ' mốc • cỡ ' + currentSize + 'px • vừa trang';
+      fitBadge.className = remain < 40 ? 'badge warn' : 'badge';
+    }
+  });
+}
+function updateCopyLine(offset){
+  const land = `${currentSize}×${Math.round(currentSize*0.75)}`;
+  const port = `${Math.round(currentSize*0.75)}×${currentSize}`;
+  const n = countSelect.value;
+  const line = `size:${currentSize} ${styleMode} ${n} mốc — land ${land} port ${port} offset ~${Math.round(offset)}`;
+  copyBadge.textContent = line;
+  copyCode.textContent = line;
+}
+
+function buildNodes(){
+  const data = getActiveData();
+  hookNodes.innerHTML = '';
+  data.forEach((item, i)=>{
+    const isPortrait = (item.h > item.w);
+    const orient = isPortrait ? 'portrait' : 'landscape';
+    const url = item.url || picsumUrl(item.seed, item.w, item.h);
+    const dir = (i % 2 === 0) ? -1 : 1;
+    const node = document.createElement('div');
+    node.className = 'hook-node ' + (dir<0?'left':'right') + ' ' + styleMode;
+    // photo element
+    const imgHtml = `<img class="hook-photo ${orient}" src="${url}" alt="${item.year}" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid'" onload="fixHookPhotoOrientation(this)">` +
+                    `<div class="hook-photo hook-photo-fallback ${orient}" style="display:none;width:var(--w-${isPortrait?'port':'land'});height:var(--h-${isPortrait?'port':'land'})">📜</div>`;
+    let inner;
+    if(styleMode === 'polaroid'){
+      inner = `<div class="hook-polaroid">${imgHtml}</div>`;
+    } else {
+      inner = imgHtml;
+    }
+    const yearHtml = `<span class="hook-year">${item.year}</span>`;
+    node.innerHTML = dir < 0 ? `${yearHtml}${inner}` : `${inner}${yearHtml}`;
+    hookNodes.appendChild(node);
+  });
+  // need vars before positioning
+  updateVars();
+  // after DOM, position
+  requestAnimationFrame(()=> requestAnimationFrame(positionHookNodes));
+}
+
+// global for onload
+window.fixHookPhotoOrientation = function(img){
+  const pol = img.closest('.hook-node');
+  // if natural dims available, correct class
+  if(img.naturalWidth && img.naturalHeight){
+    const isPort = img.naturalHeight > img.naturalWidth;
+    img.classList.toggle('portrait', isPort);
+    img.classList.toggle('landscape', !isPort);
+    // also fix fallback size var reference? keep as is — CSS var already handles both
+  }
+  // subtle: re-check overflow after image loads (height changes)
+  setTimeout(positionHookNodes, 80);
+};
+
+function render(){
+  buildNodes();
+}
+
+// controls
+sizeRange.addEventListener('input', e=>{
+  currentSize = parseInt(e.target.value,10);
+  updateVars();
+  // update photo sizes live — no rebuild, just re-position for offset
+  positionHookNodes();
+});
+btnPlain.addEventListener('click', ()=>{
+  styleMode='plain';
+  btnPlain.classList.add('active'); btnPolaroid.classList.remove('active');
+  render();
+});
+btnPolaroid.addEventListener('click', ()=>{
+  styleMode='polaroid';
+  btnPolaroid.classList.add('active'); btnPlain.classList.remove('active');
+  render();
+});
+countSelect.addEventListener('change', render);
+btnSetMixed.addEventListener('click', ()=>{
+  imageSet='mixed'; btnSetMixed.classList.add('active'); btnSetReal.classList.remove('active'); render();
+});
+btnSetReal.addEventListener('click', ()=>{
+  imageSet='real'; btnSetReal.classList.add('active'); btnSetMixed.classList.remove('active'); render();
+});
+$('btnCopy').addEventListener('click', async ()=>{
+  const t = copyBadge.textContent;
+  try{ await navigator.clipboard.writeText(t); $('btnCopy').textContent='Đã copy ✓'; setTimeout(()=>$('btnCopy').textContent='Copy dòng gửi anh',1200);}catch{ prompt('Copy dòng này gửi anh:', t); }
+});
+$('btnReset').addEventListener('click', ()=>{
+  currentSize=96; sizeRange.value=96; updateVars(); positionHookNodes();
+});
+window.addEventListener('resize', ()=> positionHookNodes());
+
+// init
+updateVars();
+render();
+console.log('[HookFlowPreview] init size', currentSize, 'style', styleMode);
+</script>
+</body>
+</html>

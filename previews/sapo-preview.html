@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sapo Preview — Evoluthing</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600&family=Playwrite+IN:wght@100..400&family=Playwrite+AU+QLD:wght@100..400&family=Playwrite+HU:wght@100..400&family=Patrick+Hand&family=Caveat:wght@400..700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:
+    radial-gradient(1200px 700px at 50% 30%, rgba(255,220,160,.10), transparent 60%),
+    radial-gradient(900px 600px at 78% 82%, rgba(120,70,40,.16), transparent 62%),
+    linear-gradient(160deg,#3a2c22 0%,#241a14 55%,#171009 100%);
+  font-family:Inter,system-ui,sans-serif;
+  display:flex;flex-direction:column;align-items:center;gap:18px;padding:18px;min-height:100vh;
+}
+h2{color:#e8c98a;font-family:"Playfair Display",serif;margin:0;text-align:center}
+.sub{color:#b8a894;font-size:13px;text-align:center;max-width:780px;line-height:1.5}
+.layout{display:flex;gap:18px;align-items:flex-start;justify-content:center;width:100%;max-width:1600px}
+.controls{display:flex;flex-direction:column;gap:10px;align-items:stretch;background:rgba(0,0,0,.22);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);width:340px;flex-shrink:0;position:sticky;top:18px;max-height:calc(100vh - 36px);overflow-y:auto}
+.controls label{color:#e8c98a;font-size:13px}
+.controls textarea{width:520px;max-width:92vw;height:96px;padding:10px 12px;border-radius:10px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226;font-family:"Dancing Script",cursive;font-size:18px;line-height:1.35;resize:vertical}
+.controls input[type=number]{width:90px;padding:6px 8px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3}
+.btn{font-family:Inter,sans-serif;font-weight:700;background:#6b442b;color:#fdfaf3;border:none;border-radius:10px;padding:8px 16px;cursor:pointer}
+.btn:hover{background:#54331e}
+.badge{font-family:Inter,sans-serif;font-size:13px;padding:6px 10px;border-radius:999px;background:#fdfaf3;color:#5a4632;border:1px solid #c9b99a}
+.badge.warn{background:#fff1c7;color:#6b4a00;border-color:#e6c86a}
+.badge.over{background:#ffd1d1;color:#7a1e1e;border-color:#e58a8a}
+
+/* book replica — exact same as index.html (100vh-48px, not -220px) */
+.book{
+  position:relative;perspective:2400px;
+  filter:drop-shadow(0 40px 60px rgba(0,0,0,.55));
+  width:min(1200px, calc(100vw - 400px), calc((100vh - 48px) * 1200 / 820));
+  aspect-ratio:1200/820;
+  background:transparent;flex-shrink:0;
+}
+.page-block{position:absolute;inset:12px 16px 12px 16px;display:block;perspective:2400px;transform-style:preserve-3d;}
+.binding{position:absolute;top:0;bottom:0;left:50%;width:60px;transform:translateX(-50%);pointer-events:none;z-index:5;
+  background:linear-gradient(90deg,transparent 0%,rgba(90,70,45,.16) 42%,rgba(60,45,28,.30) 50%,rgba(90,70,45,.16) 58%,transparent 100%)}
+.leaf{position:absolute;top:0;bottom:0;width:50%;background:
+    repeating-linear-gradient(90deg, rgba(120,100,80,.05) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(180deg, rgba(120,100,80,.05) 0 1px, transparent 1px 28px),
+    linear-gradient(90deg,#efe6d4 0%,#f7f0e2 30%,#f9f3e6 100%);
+  overflow:hidden;backface-visibility:hidden;display:flex;flex-direction:column}
+.leaf-left{left:0;border-radius:6px 0 0 6px;border-right:1px dashed rgba(120,95,70,.22)}
+.leaf-right{right:0;border-radius:0 6px 6px 0}
+.leaf-inner{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;padding:44px 30px 40px}
+.leaf-left .leaf-inner{align-items:center;justify-content:center}
+.leaf-right .leaf-inner{justify-content:center;text-align:left}
+.hook-left{display:flex;align-items:center;justify-content:center;height:100%;width:100%;position:relative}
+.hook-svg{position:absolute;inset:0;width:100%;height:100%}
+.hook-right{display:flex;flex-direction:column;justify-content:center;height:100%;overflow:hidden;padding:0 6px}
+.hook-sapo{font-family:"Dancing Script",cursive;font-size:30px;line-height:1.5;color:#3b3226;word-break:break-word}
+.hook-sapo::first-letter{font-size:42px;color:#6b442b;font-weight:700}
+.hook-sapo.font-dancing{font-family:"Dancing Script",cursive;font-weight:600}
+.hook-sapo.font-playwrite-in{font-family:"Playwrite IN",cursive;font-size:26px;line-height:1.6}
+.hook-sapo.font-playwrite-au-qld{font-family:"Playwrite AU QLD",cursive;font-size:26px;line-height:1.6}
+.hook-sapo.font-playwrite-hu{font-family:"Playwrite HU",cursive;font-size:26px;line-height:1.6}
+.hook-sapo.font-patrick{font-family:"Patrick Hand",cursive;font-size:27px;line-height:1.65}
+.hook-sapo.font-caveat{font-family:"Caveat",cursive;font-size:28px;line-height:1.55;font-weight:500}
+.hook-nodes{position:absolute;inset:0;pointer-events:none}
+@media(max-width:1100px){
+  .layout{flex-direction:column;align-items:center}
+  .controls{width:min(92vw,420px);position:static;max-height:none}
+  .book{width:min(92vw,640px);aspect-ratio:auto;min-height:520px}
+  .page-block{position:relative;inset:auto;height:auto;display:block}
+  .leaf{position:relative;width:100%;height:auto}
+  .leaf-left{border-right:none;border-bottom:1px dashed rgba(120,95,70,.22)}
+  .leaf-inner{padding:40px 18px 28px}
+  .binding{display:none}
+}
+@media(max-width:760px){
+  .book{width:min(92vw,640px);aspect-ratio:auto;min-height:520px}
+  .page-block{position:relative;inset:auto;height:auto;display:block}
+  .leaf{position:relative;width:100%;height:auto}
+  .leaf-left{border-right:none;border-bottom:1px dashed rgba(120,95,70,.22)}
+  .leaf-inner{padding:40px 18px 28px}
+  .binding{display:none}
+}
+</style>
+</head>
+<body>
+  <h2>Sapo Preview — trang phải của sổ mở</h2>
+  <div class="sub">Đây là bản sao y hệt <code>.hook-sapo</code> trong <code>index.html:201-202</code> (Dancing Script 30px / line-height 1.5 / padding 44px 30px 40px). Em gõ thử text, anh đã fill sẵn sample đầy trang.</div>
+
+  <div class="layout">
+  <div class="controls">
+    <label for="ta">Sapo text:</label>
+    <textarea id="ta" style="width:100%"></textarea>
+    <div style="display:flex;flex-direction:column;gap:8px;align-items:stretch">
+      <label for="fontSelect" style="color:#e8c98a;font-size:13px">Font sapo:</label>
+      <select id="fontSelect" style="padding:8px 10px;border-radius:10px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226;font-family:Inter,sans-serif;font-size:13px;width:100%">
+        <option value="dancing" selected>Dancing Script 600 — 30px</option>
+        <option value="playwrite-in">Playwrite India (IN) — 26px</option>
+        <option value="playwrite-au-qld">Playwrite AU QLD — 26px</option>
+        <option value="playwrite-hu">Playwrite HU — 26px</option>
+        <option value="patrick">Patrick Hand — 27px</option>
+        <option value="caveat">Caveat — 28px ✓ TV</option>
+      </select>
+      <button class="btn" id="btnFill">Fill đầy trang (sample)</button>
+      <button class="btn" id="btnClear" style="background:#3b3226">Xóa</button>
+      <span class="badge" id="countBadge">0 ký tự</span>
+      <span class="badge" id="fitBadge">—</span>
+      <span class="badge" id="fontBadge" style="font-size:11px;opacity:.9">Dancing Script 30px</span>
+    </div>
+  </div>
+
+  <div class="book" id="book">
+    <div class="page-block">
+      <div class="binding"></div>
+      <div class="leaf leaf-left"><div class="leaf-inner"><div class="hook-left" style="opacity:.35"><svg class="hook-svg" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M50,-2 C20,15 82,18 50,34 C18,50 82,52 50,68 C18,84 82,86 50,102" fill="none" stroke="#8a7a5f" stroke-width="1.4" stroke-dasharray="3 3.4" stroke-linecap="round" opacity="0.72"/></svg></div></div></div>
+      <div class="leaf leaf-right"><div class="leaf-inner"><div class="hook-right"><div class="hook-sapo" id="hookSapo"></div></div></div></div>
+    </div>
+  </div>
+  </div>
+
+<script>
+const ta = document.getElementById('ta');
+const hookSapo = document.getElementById('hookSapo');
+const countBadge = document.getElementById('countBadge');
+const fitBadge = document.getElementById('fitBadge');
+const fontSelect = document.getElementById('fontSelect');
+const fontBadge = document.getElementById('fontBadge');
+
+const FONT_MAP = {
+  'dancing': { cls: 'font-dancing', label: 'Dancing Script 600 — 30px', family: '"Dancing Script"' },
+  'playwrite-in': { cls: 'font-playwrite-in', label: 'Playwrite IN 26px', family: '"Playwrite IN"' },
+  'playwrite-au-qld': { cls: 'font-playwrite-au-qld', label: 'Playwrite AU QLD 26px', family: '"Playwrite AU QLD"' },
+  'playwrite-hu': { cls: 'font-playwrite-hu', label: 'Playwrite HU 26px', family: '"Playwrite HU"' },
+  'patrick': { cls: 'font-patrick', label: 'Patrick Hand 27px', family: '"Patrick Hand"' },
+  'caveat': { cls: 'font-caveat', label: 'Caveat 28px', family: '"Caveat"' },
+};
+function applyFont(key){
+  const cfg = FONT_MAP[key] || FONT_MAP['dancing'];
+  hookSapo.className = 'hook-sapo ' + cfg.cls;
+  fontBadge.textContent = cfg.label;
+  // also update textarea preview font so em feels it
+  ta.style.fontFamily = cfg.family + ',cursive';
+}
+fontSelect.addEventListener('change', ()=>{ applyFont(fontSelect.value); update(); });
+
+// Sample đầy trang — đo thực tế trên leaf phải 540px x ~736px, 30px/1.5 ≈ 16 dòng x ~36 ký tự/dòng
+const SAMPLE_FULL = "Bạn có bao giờ tự hỏi, một hạt cà phê nhỏ bé đã đi qua bao nhiêu thế kỷ để đến với tách cà phê mỗi sáng? Từ những rừng cà phê hoang dại ở cao nguyên Ethiopia, nơi người chăn dê Kaldi lần đầu thấy đàn dê mình nhảy nhót sau khi ăn quả đỏ, đến những quán cà phê Ả Rập trầm mặc, rồi theo tàu buôn vượt đại dương sang châu Âu, cà phê đã dệt nên một hành trình vừa đắng, vừa thơm, vừa thức tỉnh cả nhân loại.";
+
+function update(){
+  const text = ta.value;
+  hookSapo.textContent = text;
+  const len = text.length;
+  const countText = len + " ký tự" + (text.trim().split(/\s+/).filter(Boolean).length ? " • " + text.trim().split(/\s+/).filter(Boolean).length + " từ" : "");
+  countBadge.textContent = countText;
+
+  // Check overflow
+  requestAnimationFrame(()=>{
+    const rightInner = document.querySelector('.leaf-right .leaf-inner');
+    const isOver = hookSapo.scrollHeight > rightInner.clientHeight + 1;
+    if(isOver){
+      fitBadge.textContent = "⚠ TRÀN TRANG — bớt " + (hookSapo.scrollHeight - rightInner.clientHeight) + "px";
+      fitBadge.className = "badge over";
+      countBadge.className = "badge over";
+    } else {
+      const remaining = rightInner.clientHeight - hookSapo.scrollHeight;
+      fitBadge.textContent = remaining < 24 ? "✓ Vừa đầy trang (còn " + remaining + "px)" : "✓ Vừa trang (còn " + remaining + "px trống)";
+      fitBadge.className = remaining < 24 ? "badge warn" : "badge";
+      countBadge.className = "badge";
+    }
+  });
+}
+
+document.getElementById('btnFill').onclick = ()=>{ ta.value = SAMPLE_FULL; update(); };
+document.getElementById('btnClear').onclick = ()=>{ ta.value = ""; update(); };
+ta.addEventListener('input', update);
+
+// init
+ta.value = SAMPLE_FULL;
+applyFont(fontSelect.value);
+update();
+console.log("[Sapo Preview] SAMPLE_FULL length:", SAMPLE_FULL.length);
+</script>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Evoluthing — The Notebook</title>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Playfair+Display:wght@600;700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;font-family:Inter,ui-sans-serif,system-ui,sans-serif;
+  background:
+    radial-gradient(1200px 700px at 50% 30%, rgba(255,220,160,.10), transparent 60%),
+    radial-gradient(900px 600px at 78% 82%, rgba(120,70,40,.16), transparent 62%),
+    linear-gradient(160deg,#3a2c22 0%,#241a14 55%,#171009 100%);
+  overflow:hidden;
+  color:#3b3226;
+}
+.scene{height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+
+/* ===== the notebook ===== */
+.book{position:relative;width:640px;height:820px;perspective:2400px;filter:drop-shadow(0 40px 60px rgba(0,0,0,.55))}
+
+.page,.cover{position:absolute;inset:0;transform-origin:left center;backface-visibility:hidden;border-radius:6px 14px 14px 6px;overflow:hidden}
+.spine{position:absolute;left:0;top:0;bottom:0;width:34px;background:linear-gradient(90deg,#2a2018,#4a3828 60%,#3a2c20);box-shadow:inset -3px 0 6px rgba(0,0,0,.35);z-index:2}
+.spine::after{content:"";position:absolute;top:14px;bottom:14px;left:50%;width:2px;background:repeating-linear-gradient(180deg,rgba(0,0,0,.4) 0 6px,transparent 6px 14px)}
+
+/* ===== the page (grid paper) ===== */
+.page{
+  background:
+    repeating-linear-gradient(90deg, rgba(120,100,80,.05) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(180deg, rgba(120,100,80,.05) 0 1px, transparent 1px 28px),
+    linear-gradient(90deg,#efe6d4 0%,#f7f0e2 30%,#f9f3e6 100%);
+  padding:0 0 0 34px;
+}
+.page .inner{position:absolute;top:0;left:34px;right:0;bottom:0;padding:46px 36px 40px;display:flex;flex-direction:column;overflow:hidden}
+.page .inner::before{content:"";position:absolute;top:0;left:0;right:0;height:10px;background:linear-gradient(180deg,rgba(0,0,0,.10),transparent)}
+.pageno{position:absolute;bottom:18px;right:26px;font-family:"Dancing Script",cursive;font-size:21px;color:#a2947d;pointer-events:none;z-index:5}
+
+/* ===== cover ===== */
+.cover{
+  z-index:10;cursor:pointer;
+  background:
+    radial-gradient(300px 200px at 70% 30%, rgba(255,255,255,.05), transparent 60%),
+    linear-gradient(120deg,#7a4a33 0%,#6a3d2a 45%,#5a3222 100%);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.25), inset 0 0 60px rgba(0,0,0,.30);
+  transition:transform .9s cubic-bezier(.4,.05,.15,1);
+}
+.cover.open{transform:rotateY(-178deg)}
+.cover .inner{position:absolute;top:0;left:34px;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0 40px;text-align:center}
+.cover .frame{position:absolute;inset:22px;border:2px solid rgba(232,201,138,.32);border-radius:4px;pointer-events:none}
+.cover h1{font-family:"Playfair Display",Georgia,serif;font-weight:800;font-size:56px;letter-spacing:.02em;color:#e8c98a;margin:0;text-shadow:0 2px 0 rgba(0,0,0,.35)}
+.cover .tag{font-family:"Dancing Script",cursive;font-size:32px;color:#e6d5b3;margin-top:10px;opacity:.92}
+
+/* clasp on right edge — pulses to invite opening */
+.clasp{position:absolute;right:-14px;top:44%;width:44px;height:64px;background:linear-gradient(90deg,#4a3423,#6b4c33);border:2px solid rgba(0,0,0,.3);border-radius:6px;display:grid;place-items:center;z-index:11;box-shadow:0 4px 10px rgba(0,0,0,.35);animation:invite 2.4s ease-in-out infinite}
+.clasp .knob{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#e8c98a,#9a7b45 70%,#6f5830);box-shadow:inset 0 2px 3px rgba(0,0,0,.4)}
+@keyframes invite{
+  0%,100%{box-shadow:0 4px 10px rgba(0,0,0,.35),0 0 0 0 rgba(232,201,138,0)}
+  50%{box-shadow:0 4px 10px rgba(0,0,0,.35),0 0 0 12px rgba(232,201,138,.28)}
+}
+.cover.open .clasp{animation:none;opacity:0}
+
+/* ===== prompt page ===== */
+.prompt-title{font-family:"Dancing Script",cursive;font-size:38px;line-height:1.25;margin-top:20px;font-weight:700}
+.prompt-input-wrap{position:relative;margin-top:48px}
+.prompt-input{width:100%;background:transparent;border:none;outline:none;
+  font-family:"Dancing Script",cursive;font-size:50px;color:#3b3226;padding:6px 4px 18px;caret-color:#8a6a3f;text-align:center}
+.prompt-input::placeholder{color:#cfc1a4;opacity:.8}
+/* hand-drawn underline beneath the input: use the downloaded PNG stroke */
+.prompt-line{position:absolute;left:2%;right:2%;bottom:0;height:44px;pointer-events:none;overflow:visible}
+.prompt-line img{width:100%;height:100%;object-fit:fill;display:block;opacity:.95}
+
+/* ===== loading ===== */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%}
+.loading .pen{font-size:52px;animation:bob 1.1s ease-in-out infinite}
+.loading .msg{margin-top:26px;font-family:"Dancing Script",cursive;font-size:34px;color:#6f5f47}
+.loading .dots{font-family:"Dancing Script",cursive;font-size:34px;color:#6f5f47}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-8deg)}50%{transform:translateY(-12px) rotate(6deg)}}
+@keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+.loading .dots span{animation:blink 1.2s infinite}
+.loading .dots span:nth-child(2){animation-delay:.2s}
+.loading .dots span:nth-child(3){animation-delay:.4s}
+
+/* ===== milestone page ===== */
+.milestone{display:flex;flex-direction:column;height:100%}
+.polaroid-wrap{position:relative;margin:0 auto;padding-top:18px;width:416px}
+.polaroid{background:#fbfbf4;padding:24px 12px 40px;box-shadow:0 10px 24px rgba(0,0,0,.28);transform:rotate(-1.5deg);position:relative;border:1px solid #eee}
+.polaroid .photo{width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;background:#e6ddc8;display:block;border:1px solid #000}
+.polaroid .photo.fallback{display:grid;place-items:center;font-size:96px}
+.polaroid .caption{position:absolute;bottom:9px;left:0;right:0;text-align:center;font-family:"Dancing Script",cursive;font-size:23px;color:#4a4034}
+/* single short tape with torn serrated ends (opaque, darker, overlapping the white border) */
+.tape{
+  position:absolute;width:78px;height:26px;top:7px;left:50%;transform:translateX(-50%) rotate(-2deg);z-index:3;
+  --td:6px;
+  clip-path:polygon(
+    0 0, var(--td) 22%, 0 44%, var(--td) 66%, 0 88%, 0 100%,
+    100% 100%, calc(100% - var(--td)) 78%, 100% 56%, calc(100% - var(--td)) 34%, 100% 12%, 100% 0,
+    0 0
+  );
+  background:#dbcaa2;
+  box-shadow:
+    0 2px 7px rgba(0,0,0,.48),
+    0 0 0 1px rgba(110,92,60,.30),
+    inset 0 1px 0 rgba(255,255,255,.45),
+    inset 0 -1px 0 rgba(120,100,70,.30);
+}
+.tape::after{
+  content:"";position:absolute;inset:0;
+  clip-path:inherit;
+  background:linear-gradient(100deg, transparent 16%, rgba(255,255,255,.55) 36%, transparent 50%, rgba(255,255,255,.32) 72%, transparent 88%);
+}
+.notes{margin-top:26px;font-family:"Dancing Script",cursive;color:#3b3226;padding:0 6px}
+.notes .mname{font-size:46px;line-height:1;font-weight:700}
+.notes .myear{font-size:22px;color:#8a7a5f;margin-top:3px}
+.notes .mrow{margin-top:16px;font-size:26px;line-height:1.3}
+.notes .mrow b{color:#5a4430}
+
+/* ===== page flip affordance ===== */
+.flip-zone{position:absolute;top:0;bottom:0;width:64px;z-index:12;cursor:pointer}
+.flip-zone.prev{left:34px}
+.flip-zone.next{right:0}
+/* page edge lift: hovering the outer edge curls the whole edge upward like a fingertip lifting the page */
+.book{transition:filter .5s ease}
+.page{transition:transform .5s cubic-bezier(.22,.7,.2,1);transform-origin:left center;will-change:transform}
+.book.hover-next .page{transform:rotateY(-4deg)}
+.book.hover-prev .page{transform:rotateY(4deg);transform-origin:right center}
+.book.hover-next{filter:drop-shadow(0 46px 54px rgba(0,0,0,.55)) drop-shadow(16px 6px 14px rgba(0,0,0,.26))}
+.book.hover-prev{filter:drop-shadow(0 46px 54px rgba(0,0,0,.55)) drop-shadow(-16px 6px 14px rgba(0,0,0,.26))}
+.page::before{content:"";position:absolute;top:0;bottom:0;width:130px;pointer-events:none;opacity:0;transition:opacity .4s ease;z-index:3}
+.page::after{content:"";position:absolute;top:0;bottom:0;width:2px;pointer-events:none;opacity:0;transition:opacity .4s ease;z-index:3;background:rgba(255,255,255,.8)}
+.book.hover-next .page::before{right:0;opacity:1;background:linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.10) 50%, rgba(0,0,0,.22) 100%)}
+.book.hover-prev .page::before{left:0;opacity:1;background:linear-gradient(270deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.10) 50%, rgba(0,0,0,.22) 100%)}
+.book.hover-next .page::after{right:0;opacity:.85}
+.book.hover-prev .page::after{left:0;opacity:.85}
+
+@media(max-width:760px){.book{transform:scale(.68);transform-origin:center center}}
+
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="scene">
+  <div class="book" id="book">
+
+    <div class="page" id="page"><div class="spine"></div><div class="inner" id="pageInner"></div></div>
+
+    <div class="cover" id="cover">
+      <div class="spine"></div>
+      <div class="inner">
+        <div class="frame"></div>
+        <h1>Evoluthing</h1>
+        <div class="tag">How things evolution?</div>
+      </div>
+      <div class="clasp"><div class="knob"></div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const MILESTONES = [
+  { name:"Abacus", year:"~2700 BC",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Abacus_%28PSF%29.png/330px-Abacus_%28PSF%29.png",
+    what:"A hand-operated frame of beads used for counting.",
+    why:"It let people calculate thousands of years before electricity." },
+  { name:"Vacuum tube", year:"1904",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/Elektronenroehren-auswahl.jpg/330px-Elektronenroehren-auswahl.jpg",
+    what:"A glass tube that controls the flow of electric current.",
+    why:"It made early electronic computing possible — but ran hot and bulky." },
+  { name:"ENIAC", year:"1945",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/6/6c/ENIAC_Penn1.jpg/330px-ENIAC_Penn1.jpg",
+    what:"One of the first electronic general-purpose computers.",
+    why:"It proved automatic, high-speed calculation was real." },
+  { name:"Transistor", year:"1947",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Transbauformen.jpg/330px-Transbauformen.jpg",
+    what:"A tiny semiconductor switch that replaced vacuum tubes.",
+    why:"It made computers smaller, cooler, and far more reliable." },
+  { name:"Apple II", year:"1977",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Apple_II-IMG_7064.jpg/330px-Apple_II-IMG_7064.jpg",
+    what:"One of the first highly successful mass-produced microcomputers.",
+    why:"It brought computing into homes and schools." },
+  { name:"Macintosh", year:"1984",
+    img:"https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Computer_macintosh_128k%2C_1984_%28all_about_Apple_onlus%29.jpg/330px-Computer_macintosh_128k%2C_1984_%28all_about_Apple_onlus%29.jpg",
+    what:"The first mass-market computer with a graphical interface and mouse.",
+    why:"It made computers intuitive enough for everyone." },
+  { name:"Ngày nay", year:"hiện tại", img:null, emoji:"🖥️",
+    what:"Một chiếc máy tính nhỏ gọn nhanh gấp triệu lần ENIAC.",
+    why:"Hành trình từ hạt đếm tới silicon giờ nằm gọn trong tay bạn." }
+];
+
+const $ = id => document.getElementById(id);
+const page = $("page"), pageInner = $("pageInner"), cover = $("cover"), book = $("book");
+let phase = "cover", mIndex = 0;
+
+function promptHTML(){
+  return `
+    <div class="prompt-title">Hôm nay, mình muốn tìm hiểu về sự tiến hóa của:</div>
+    <div class="prompt-input-wrap">
+      <input class="prompt-input" id="topicInput" placeholder="máy tính…" autocomplete="off">
+      <div class="prompt-line">
+        <img src="../assets/underline.png" alt="">
+      </div>
+    </div>`;
+}
+function loadingHTML(){
+  return `<div class="loading">
+    <div class="pen">✏️</div>
+    <div class="msg">Đang suy nghĩ…</div>
+    <div class="dots"><span>·</span><span>·</span><span>·</span></div>
+  </div>`;
+}
+function milestoneHTML(i){
+  const m = MILESTONES[i];
+  const photo = m.img
+    ? `<img class="photo" src="${m.img}" alt="${m.name}">`
+    : `<div class="photo fallback">${m.emoji}</div>`;
+  return `
+    <div class="milestone">
+      <div class="polaroid-wrap">
+        <div class="tape"></div>
+        <div class="polaroid">${photo}<div class="caption">${m.name} — ${m.year}</div></div>
+      </div>
+      <div class="notes">
+        <div class="mname">${m.name}</div>
+        <div class="myear">${m.year}</div>
+        <div class="mrow"><b>What —</b> ${m.what}</div>
+        <div class="mrow"><b>Why —</b> ${m.why}</div>
+      </div>
+    </div>
+    <div class="pageno">${i+1} / ${MILESTONES.length}</div>
+    <div class="flip-zone prev" data-nav="prev"></div>
+    <div class="flip-zone next" data-nav="next"></div>
+    <div class="curltip prev"></div>
+    <div class="curltip next"></div>`;
+}
+
+function setPage(html){ pageInner.innerHTML = html; }
+
+function showPrompt(){
+  phase = "prompt";
+  setPage(promptHTML());
+  $("topicInput").focus();
+  $("topicInput").addEventListener("keydown", e => { if(e.key==="Enter") startLoading(); });
+}
+
+function openCover(){
+  if(phase!=="cover") return;
+  cover.classList.add("open");
+  showPrompt();
+  setTimeout(()=>{ cover.style.display="none"; }, 950);
+}
+
+function startLoading(){
+  phase = "loading";
+  setPage(loadingHTML());
+  setTimeout(()=>{ mIndex = 0; showMilestone(); }, 1600);
+}
+
+function doFlip(dir, swap){
+  page.style.transition = "transform .32s ease, opacity .32s ease";
+  page.style.transform = `rotateY(${dir>0?-88:88}deg)`;
+  page.style.opacity = "0";
+  setTimeout(()=>{
+    swap();
+    page.style.transition = "none";
+    page.style.transform = `rotateY(${dir>0?88:-88}deg)`;
+    page.style.opacity = "0";
+    void page.offsetWidth;
+    page.style.transition = "transform .32s ease, opacity .32s ease";
+    page.style.transform = "rotateY(0deg)";
+    page.style.opacity = "1";
+    setTimeout(()=>{ page.style.transform=""; page.style.transition=""; }, 340);
+  }, 320);
+}
+
+function showMilestone(dir){
+  phase = "milestone";
+  if(dir){ doFlip(dir, ()=> setPage(milestoneHTML(mIndex))); }
+  else setPage(milestoneHTML(mIndex));
+}
+
+function next(){ if(phase!=="milestone"||mIndex>=MILESTONES.length-1) return; mIndex++; showMilestone(1); }
+function prev(){ if(phase!=="milestone"||mIndex<=0) return; mIndex--; showMilestone(-1); }
+
+// cover opens on click
+cover.addEventListener("click", openCover);
+
+// keyboard as silent backup
+window.addEventListener("keydown", e => {
+  if(e.key==="ArrowRight") next();
+  if(e.key==="ArrowLeft") prev();
+});
+
+// click to flip + hover curl affordance
+document.addEventListener("click", e => {
+  const nav = e.target.closest("[data-nav]");
+  if(!nav) return;
+  if(nav.dataset.nav==="next") next();
+  if(nav.dataset.nav==="prev") prev();
+});
+document.addEventListener("mouseover", e => {
+  const zone = e.target.closest(".flip-zone");
+  if(zone){ book.classList.toggle("hover-next", zone.dataset.nav==="next"); book.classList.toggle("hover-prev", zone.dataset.nav==="prev"); }
+});
+document.addEventListener("mouseout", e => {
+  const zone = e.target.closest(".flip-zone");
+  if(zone){ book.classList.remove("hover-next","hover-prev"); }
+});
+
+// start on the cover
+setPage(promptHTML());
+</script>
+</body>
+</html>

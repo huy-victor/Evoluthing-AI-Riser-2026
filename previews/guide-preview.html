@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Guide Preview — Evoluthing</title>
+<link href="https://fonts.googleapis.com/css2?family=Fuzzy+Bubbles:wght@400;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  background:
+    radial-gradient(1200px 700px at 50% 30%, rgba(255,220,160,.10), transparent 60%),
+    radial-gradient(900px 600px at 78% 82%, rgba(120,70,40,.16), transparent 62%),
+    linear-gradient(160deg,#3a2c22 0%,#241a14 55%,#171009 100%);
+  font-family:Inter,system-ui,sans-serif;
+  display:flex;flex-direction:column;align-items:center;gap:16px;padding:18px;min-height:100vh;
+}
+h2{color:#e8c98a;font-family:"Playfair Display",serif;margin:0;text-align:center}
+.sub{color:#b8a894;font-size:13px;text-align:center;max-width:900px;line-height:1.5}
+.sub code{background:rgba(255,255,255,.1);padding:1px 6px;border-radius:6px;color:#e8c98a}
+.layout{display:flex;gap:18px;align-items:flex-start;justify-content:center;width:100%;max-width:1600px}
+.controls{display:flex;flex-direction:column;gap:14px;align-items:stretch;background:rgba(0,0,0,.22);padding:14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);width:370px;flex-shrink:0;position:sticky;top:18px;max-height:calc(100vh - 36px);overflow-y:auto}
+.controls label{color:#e8c98a;font-size:13px;font-weight:600}
+.ctrl-group{background:rgba(255,255,255,.07);padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.10);display:flex;flex-direction:column;gap:8px}
+.ctrl-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{font-family:Inter,sans-serif;font-size:12px;padding:5px 9px;border-radius:999px;background:#fdfaf3;color:#5a4632;border:1px solid #c9b99a;display:inline-block}
+.badge.warn{background:#fff1c7;color:#6b4a00;border-color:#e6c86a}
+.badge.over{background:#ffd1d1;color:#7a1e1e;border-color:#e58a8a}
+.badge.dim{background:rgba(255,255,255,.08);color:#b8a894;border-color:rgba(255,255,255,.12)}
+.btn{font-family:Inter,sans-serif;font-weight:700;background:#6b442b;color:#fdfaf3;border:none;border-radius:10px;padding:9px 16px;cursor:pointer}
+.btn:hover{background:#54331e}
+.btn.secondary{background:#3b3226}
+input.ctrl-input, textarea.ctrl-input{width:100%;padding:8px 10px;border-radius:10px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226;font-family:"Fuzzy Bubbles",cursive;font-size:15px;line-height:1.45;-webkit-text-stroke:.45px currentColor}
+textarea.ctrl-input{resize:vertical}
+input[type=number].ctrl-num{width:72px;padding:6px 8px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226;font-family:Inter,sans-serif;font-size:13px}
+input[type=color]{width:42px;height:32px;padding:2px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;cursor:pointer}
+
+/* book replica — index.html 1200x820 spread */
+.book{
+  position:relative;perspective:2400px;
+  filter:drop-shadow(0 40px 60px rgba(0,0,0,.55));
+  width:min(1200px, calc(100vw - 430px), calc((100vh - 48px) * 1200 / 820));
+  aspect-ratio:1200/820;
+  background:transparent;flex-shrink:0;
+}
+.page-block{position:absolute;inset:12px 16px 12px 16px;display:block;}
+.binding{position:absolute;top:0;bottom:0;left:50%;width:60px;transform:translateX(-50%);pointer-events:none;z-index:5;
+  background:linear-gradient(90deg,transparent 0%,rgba(90,70,45,.16) 42%,rgba(60,45,28,.30) 50%,rgba(90,70,45,.16) 58%,transparent 100%)}
+.leaf{position:absolute;top:0;bottom:0;width:50%;
+  overflow:hidden;backface-visibility:visible;display:flex;flex-direction:column;
+  background:
+    repeating-linear-gradient(90deg, rgba(120,100,80,.05) 0 1px, transparent 1px 28px),
+    repeating-linear-gradient(180deg, rgba(120,100,80,.05) 0 1px, transparent 1px 28px),
+    linear-gradient(90deg,#efe6d4 0%,#f7f0e2 30%,#f9f3e6 100%);}
+.leaf-left{left:0;border-radius:6px 0 0 6px;border-right:1px dashed rgba(120,95,70,.22)}
+.leaf-right{right:0;border-radius:0 6px 6px 0}
+.leaf-inner{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;padding:44px 30px 40px}
+.leaf-right .leaf-inner{justify-content:center}
+
+/* ===== GUIDE PAGE (customizable) ===== */
+.guide-wrap{display:flex;flex-direction:column;height:100%;padding-top:4px}
+.guide-title{
+  font-family:"Fuzzy Bubbles",cursive;font-weight:700;
+  font-size:var(--gt-fs,27px);line-height:1.35;
+  color:var(--gt-title,#3b3023);
+  -webkit-text-stroke:.7px currentColor;text-align:center;margin:0;
+}
+.guide-title-line{margin-top:6px}
+.guide-title-line img{width:min(440px,76%);height:36px;object-fit:fill;display:block;margin:0 auto;opacity:.92}
+.guide-steps{margin-top:var(--gt-gap,22px);display:flex;flex-direction:column;gap:var(--gt-row,16px)}
+.guide-step{position:relative;display:flex;gap:10px;align-items:flex-start}
+.guide-step .marker{
+  flex-shrink:0;font-family:"Fuzzy Bubbles",cursive;font-weight:700;
+  color:var(--gt-marker,#8a5a34);-webkit-text-stroke:.5px currentColor;
+  line-height:1.3;
+}
+.guide-step .marker.num{font-size:calc(var(--gt-fs-body,19px) + 1px)}
+.guide-step .marker.circle{border:1.6px solid var(--gt-marker,#8a5a34);border-radius:52% 46% 56% 48%;transform:rotate(-3deg);width:30px;height:29px;display:flex;align-items:center;justify-content:center;font-size:calc(var(--gt-fs-body,19px) - 1px)}
+.guide-step:nth-child(odd) .marker.circle{transform:rotate(2.5deg)}
+.guide-step .marker.dash::before{content:"–";font-size:calc(var(--gt-fs-body,19px) + 2px)}
+.guide-step p{
+  margin:0;font-family:"Fuzzy Bubbles",cursive;
+  font-size:var(--gt-fs-body,19px);line-height:var(--gt-lh,1.5);
+  color:var(--gt-text,#3b3226);-webkit-text-stroke:.45px currentColor;
+}
+.guide-ps{
+  margin-top:auto;font-family:"Fuzzy Bubbles",cursive;
+  font-size:var(--gt-fs-ps,16px);font-style:normal;line-height:1.45;
+  color:var(--gt-ps,#7a6248);-webkit-text-stroke:.45px currentColor;
+  transform:rotate(-1deg);text-align:center;padding-top:12px;
+}
+.guide-arrow{position:absolute;left:14px;bottom:120px;width:110px;height:150px;pointer-events:none;opacity:.85}
+/* ===== static prompt replica (context only) ===== */
+.prompt-wrap{display:flex;flex-direction:column;height:100%;justify-content:center;padding:10px 10px 30px}
+.prompt-title{font-family:"Fuzzy Bubbles",cursive;font-size:28px;line-height:1.35;margin-top:0;font-weight:400;-webkit-text-stroke:.7px currentColor;text-align:center;color:#3b3023}
+.prompt-input-mock{margin:32px 0 24px;text-align:center}
+.prompt-input-mock .line-txt{font-family:"Fuzzy Bubbles",cursive;font-size:36px;color:#cfc1a4;-webkit-text-stroke:.7px currentColor}
+.prompt-line{height:44px;overflow:visible;margin-top:-6px}
+.prompt-line img{width:96%;height:100%;object-fit:fill;display:block;opacity:.95}
+.btn-explore-circle{position:relative;display:grid;place-items:center;margin:14px auto 0}
+.circle-draw{position:absolute;top:-5px;left:0;right:0;bottom:0;width:100%;height:100%;pointer-events:none}
+.circle-draw img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;display:block}
+.btn-explore{position:relative;z-index:1;font-family:"Fuzzy Bubbles",cursive;font-size:20px;font-weight:400;-webkit-text-stroke:.45px currentColor;color:#3b3226}
+.suggestions-title{font-family:"Fuzzy Bubbles",cursive;font-size:18px;color:#8a7860;-webkit-text-stroke:.45px currentColor;text-align:center;margin-top:36px}
+.suggestions-grid{display:flex;flex-wrap:wrap;gap:6px 26px;justify-content:center;margin-top:10px}
+.sug-chip{font-family:"Fuzzy Bubbles",cursive;font-size:19px;-webkit-text-stroke:.45px currentColor;color:#4f3f2d}
+.sug-chip:nth-child(2n){transform:rotate(-1.2deg)}
+.sug-chip:nth-child(3n){transform:rotate(1.4deg)}
+
+@media(max-width:1150px){
+  .layout{flex-direction:column;align-items:center}
+  .controls{width:min(92vw,420px);position:static;max-height:none}
+  .book{width:min(92vw,700px);aspect-ratio:auto;min-height:620px}
+  .page-block{position:relative;inset:auto;height:auto;display:block}
+  .leaf{position:relative;width:100%;height:auto}
+  .leaf-left{border-right:none;border-bottom:1px dashed rgba(120,95,70,.22)}
+  .leaf-inner{padding:36px 18px 28px}
+  .binding{display:none}
+  .guide-arrow{display:none}
+}
+</style>
+</head>
+<body>
+  <h2>Guide Preview — trang hướng dẫn bên trái spread nhập topic</h2>
+  <div class="sub">
+    Trang <b>trái</b> = hướng dẫn sử dụng (tuỳ chỉnh live bằng panel bên cạnh). Trang <b>phải</b> chỉ là bản tĩnh mô phỏng trang nhập topic để xem tổng thể spread. Chưa vừa thì chỉnh xong ấn <code>Copy dòng gửi anh</code>.
+  </div>
+
+  <div class="layout">
+    <div class="controls">
+      <div class="ctrl-group">
+        <label for="inpTitle">Tiêu đề trang hướng dẫn</label>
+        <textarea id="inpTitle" class="ctrl-input" style="height:54px">HƯỚNG DẪN DÙNG SỔ EVOLUTHING!</textarea>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Cỡ: <input type="number" id="fsTitle" class="ctrl-num" value="26" min="18" max="38"> px</label>
+          <label style="font-size:11px;color:#b8a894">Màu:</label>
+          <input type="color" id="colTitle" value="#3b3023">
+          <span class="badge dim" id="countTitle">— ký tự</span>
+        </div>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894"><input type="checkbox" id="chkLine" checked> Gạch nét tay dưới tiêu đề (underline.png)</label>
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <label for="inpSteps">Các bước — mỗi dòng 1 bước (giữ trống dòng = tách khối)</label>
+        <textarea id="inpSteps" class="ctrl-input" style="height:170px">Ở trang bên phải, hãy viết chủ đề bạn muốn tìm hiểu. Viết càng rõ ràng, kết quả càng như ý.
+Sau đó, chạm vào ✨Khám phá✨ và chờ đợi phép màu từ sổ.
+Lật trang bằng cách chạm nhẹ vào mép trái hoặc phải của trang giấy.
+Chạm vào 'Wikipedia' nếu muốn tìm hiểu thêm.</textarea>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Cỡ chữ: <input type="number" id="fsBody" class="ctrl-num" value="20" min="13" max="26"> px</label>
+          <label style="font-size:11px;color:#b8a894">Dãn dòng: <input type="number" id="numLH" class="ctrl-num" value="15" min="10" max="22" step="1"> (&times;0.1)</label>
+        </div>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Gap giữa bước: <input type="number" id="numRow" class="ctrl-num" value="20" min="6" max="34"> px</label>
+          <label style="font-size:11px;color:#b8a894">Gap sau tiêu đề: <input type="number" id="numGap" class="ctrl-num" value="17" min="6" max="50"> px</label>
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <label>Ký hiệu đầu dòng</label>
+        <select id="selMarker" class="btn secondary" style="font-weight:400;width:100%">
+          <option value="circle">Số trong oval nét tay (1, 2, 3, 4)</option>
+          <option value="num" selected>Số ghi tay 1. 2. 3.</option>
+          <option value="dash">Gạch ngang –</option>
+          <option value="">Không đánh dấu</option>
+        </select>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Màu ký hiệu:</label>
+          <input type="color" id="colMarker" value="#8a5a34">
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <label>Màu chữ nội dung</label>
+        <div class="ctrl-row">
+          <input type="color" id="colText" value="#3b3226">
+          <input type="text" id="colTextHex" value="#3b3226" style="flex:1;padding:6px 8px;border-radius:8px;border:1px solid #c9b99a;background:#fdfaf3;color:#3b3226;font-family:Inter,sans-serif;font-size:12px">
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <label for="inpPs">Ghi chú cuối trang (chú thích nghiêng kiểu chủ sổ)</label>
+        <textarea id="inpPs" class="ctrl-input" style="height:64px">p/s — đề tài dễ gây nhầm lẫn thì sổ sẽ hỏi lại cho chắc trước khi bắt đầu. Ví dụ: Apple là quả hay công ty?</textarea>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894">Cỡ: <input type="number" id="fsPs" class="ctrl-num" value="16" min="12" max="24"> px</label>
+          <label style="font-size:11px;color:#b8a894"><input type="checkbox" id="chkPsOn"> Hiện ghi chú</label>
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <label>Vẽ mèo chú thích trang trí</label>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894"><input type="checkbox" id="chkArrow"> Mũi tên nét tay chìa về mép phải (hướng lật trang)</label>
+        </div>
+        <div class="ctrl-row">
+          <label style="font-size:11px;color:#b8a894"><input type="checkbox" id="chkSticky"> Kẹp giấy vàng phía trên trang (clip art)</label>
+        </div>
+      </div>
+
+      <div class="ctrl-group">
+        <div class="ctrl-row">
+          <button class="btn" id="btnCopy" style="flex:1">Copy dòng gửi anh</button>
+          <button class="btn secondary" id="btnReset" style="flex:1">Reset mặc định</button>
+        </div>
+        <span class="badge" id="copyBadge" style="font-size:11px;word-break:break-all">—</span>
+        <span class="badge dim" id="fitBadge">—</span>
+      </div>
+    </div>
+
+    <div class="book" id="book">
+      <div class="page-block">
+        <div class="binding"></div>
+        <div class="leaf leaf-left"><div class="leaf-inner" id="leafLeftInner"></div></div>
+        <div class="leaf leaf-right"><div class="leaf-inner">
+          <div class="prompt-wrap">
+            <div class="prompt-title">Hôm nay, mình muốn tìm hiểu về quá trình tiến hoá của:</div>
+            <div class="prompt-input-mock"><span class="line-txt">Máy tính</span></div>
+            <div class="prompt-line"><img src="../assets/underline.png" alt=""></div>
+            <div class="btn-explore-circle" style="--circle-w:223px;--circle-h:91px">
+              <span class="circle-draw" aria-hidden="true"><img src="../assets/circle.png" alt=""></span>
+              <span class="btn-explore">✨Khám phá✨</span>
+            </div>
+            <div class="suggestions-title">Hoặc chạm nhanh một chủ đề gợi ý:</div>
+            <div class="suggestions-grid">
+              <span class="sug-chip">👘 Áo dài</span><span class="sug-chip">💻 Máy tính</span><span class="sug-chip">🍜 Mì ăn liền</span><span class="sug-chip">📱 Smartphone</span><span class="sug-chip">☕ Cà phê</span>
+            </div>
+          </div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+const $ = id => document.getElementById(id);
+const leafLeftInner = $('leafLeftInner');
+
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// để lại khoảng trống trước dấu hai chấm khi không cần, nhưng giữ đúng bản thảo
+function svgArrow(){
+  // mũi tên cong nét tay chỉ về mép phải trang
+  return `<svg class="guide-arrow" viewBox="0 0 110 150" aria-hidden="true">
+    <path d="M18 8 C 66 34, 84 74, 74 118" fill="none" stroke="#8a5a34" stroke-width="3.4" stroke-linecap="round" opacity=".75"/>
+    <path d="M58 104 C 66 112, 71 118, 74 124 C 79 116, 86 108, 94 103" fill="none" stroke="#8a5a34" stroke-width="3.4" stroke-linecap="round" opacity=".75"/>
+  </svg>`;
+}
+
+function buildGuide(){
+  const title = $('inpTitle').value.trim();
+  const showLine = $('chkLine').checked;
+  const stepsRaw = $('inpSteps').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const psTxt = $('inpPs').value.trim();
+  const showPs = $('chkPsOn').checked && !!psTxt;
+  const markerMode = $('selMarker').value;
+
+  const markerHtml = (i)=>{
+    if(!markerMode) return '';
+    if(markerMode==='circle') return `<span class="marker circle">${i+1}</span>`;
+    if(markerMode==='num') return `<span class="marker num">${i+1}.</span>`;
+    return `<span class="marker dash"></span>`;
+  };
+
+  const stepsHtml = stepsRaw.map((raw,i)=>`
+    <div class="guide-step">${markerHtml(i)}<p>${esc(raw)}</p></div>`).join('');
+
+  const titleBlock = title ? `
+    <h1 class="guide-title">${esc(title)}</h1>
+    ${showLine ? `<div class="guide-title-line"><img src="../assets/underline.png" alt=""></div>` : ''}
+  ` : '';
+
+  const sticky = $('chkSticky').checked ? `
+    <div style="position:absolute;top:-2px;left:50%;translate:-50% 0;width:86px;height:26px;background:linear-gradient(180deg,#e8d8a0,#dcc98a);box-shadow:0 2px 5px rgba(60,40,10,.25);clip-path:polygon(0 0,100% 0,96% 100%,88% 88%,78% 100%,68% 86%,57% 100%,47% 87%,36% 100%,26% 86%,15% 100%,4% 90%);opacity:.95"></div>` : '';
+
+  leafLeftInner.innerHTML = `
+    ${sticky}
+    ${$('chkArrow').checked ? svgArrow() : ''}
+    <div class="guide-wrap" id="pvGuideWrap">
+      ${titleBlock}
+      <div class="guide-steps">${stepsHtml || '<span style="opacity:.4;font-family:\'Fuzzy Bubbles\',cursive;font-size:18px">— chưa có bước —</span>'}</div>
+      ${showPs ? `<div class="guide-ps">${esc(psTxt)}</div>` : ''}
+    </div>
+  `;
+  applySizes(); checkFit(); updateCopy();
+}
+
+function applySizes(){
+  const w = leafLeftInner;
+  w.style.setProperty('--gt-fs',     (parseInt($('fsTitle').value)||27)+'px');
+  w.style.setProperty('--gt-fs-body',(parseInt($('fsBody').value)||19)+'px');
+  w.style.setProperty('--gt-lh',     ((parseInt($('numLH').value)||15)/10)+'');
+  w.style.setProperty('--gt-row',    (parseInt($('numRow').value)||16)+'px');
+  w.style.setProperty('--gt-gap',    (parseInt($('numGap').value)||22)+'px');
+  w.style.setProperty('--gt-fs-ps',  (parseInt($('fsPs').value)||16)+'px');
+  w.style.setProperty('--gt-title',  $('colTitle').value);
+  w.style.setProperty('--gt-text',   $('colText').value);
+  w.style.setProperty('--gt-marker', $('colMarker').value);
+  w.style.setProperty('--gt-ps',     shade($('colText').value,-18));
+  $('colTextHex').value = $('colText').value;
+  $('countTitle').textContent = $('inpTitle').value.length + ' ký tự';
+}
+
+function shade(hex,pct){
+  const n=parseInt(hex.slice(1),16);
+  let r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  r=Math.round(r*(100+pct)/100); g=Math.round(g*(100+pct)/100); b=Math.round(b*(100+pct)/100);
+  return '#'+[r,g,b].map(v=>Math.max(0,Math.min(255,v)).toString(16).padStart(2,'0')).join('');
+}
+
+function checkFit(){
+  requestAnimationFrame(()=>{
+    const wrap=document.getElementById('pvGuideWrap'), inner=leafLeftInner;
+    if(!wrap||!inner) return;
+    const over=wrap.scrollHeight > inner.clientHeight+2;
+    if(over){
+      $('fitBadge').textContent='⚠ TRÀN trái +' + (wrap.scrollHeight-inner.clientHeight) + 'px — giảm cỡ chữ/giảm dòng';
+      $('fitBadge').className='badge over';
+    }else{
+      const remain=inner.clientHeight-wrap.scrollHeight;
+      $('fitBadge').textContent=(remain<30?'⚠ Vừa đầy (còn ':'✓ Vừa trang (còn ')+remain+'px)';
+      $('fitBadge').className=remain<30?'badge warn':'badge';
+    }
+  });
+}
+
+function updateCopy(){
+  const cfg=[
+    'title:'+(parseInt($('fsTitle').value)||27)+'px('+$('colTitle').value+')',
+    'line:'+($('chkLine').checked?'on':'off'),
+    'body:'+(parseInt($('fsBody').value)||19)+'px lh'+((parseInt($('numLH').value)||15)/10),
+    'row:'+(parseInt($('numRow').value)||16)+' gap:'+(parseInt($('numGap').value)||22),
+    'marker:'+$('selMarker').value+'('+$('colMarker').value+')',
+    'ps:'+(parseInt($('fsPs').value)||16)+'px '+($('chkPsOn').checked?'on':'off'),
+    'arrow:'+($('chkArrow').checked?'on':'off')+' sticky:'+($('chkSticky').checked?'on':'off')
+  ].join(' ');
+  $('copyBadge').textContent = cfg;
+}
+
+[
+ 'fsTitle','fsBody','numLH','numRow','numGap','fsPs'
+].forEach(id=> $(id).addEventListener('input', ()=>{ applySizes(); checkFit(); updateCopy(); }));
+[
+ 'inpTitle','inpSteps','inpPs'
+].forEach(id=> $(id).addEventListener('input', buildGuide));
+[
+ 'chkLine','chkPsOn','chkArrow','chkSticky','selMarker'
+].forEach(id=> $(id).addEventListener('change', buildGuide));
+['colTitle','colMarker'].forEach(id=> $(id).addEventListener('input', ()=>{ applySizes(); updateCopy(); }));
+$('colText').addEventListener('input', ()=>{ applySizes(); updateCopy(); });
+$('colTextHex').addEventListener('input', ()=>{
+  if(/^#[0-9a-fA-F]{6}$/.test($('colTextHex').value)){
+    $('colText').value=$('colTextHex').value;
+    applySizes(); updateCopy();
+  }
+});
+
+$('btnCopy').addEventListener('click', async ()=>{
+  const t = $('copyBadge').textContent
+    + '\ntitle: ' + $('inpTitle').value
+    + '\nsteps: ' + $('inpSteps').value.replace(/\n/g,' | ')
+    + '\nps: ' + $('inpPs').value;
+  try{
+    await navigator.clipboard.writeText(t);
+    $('btnCopy').textContent='Đã copy ✓';
+    setTimeout(()=>$('btnCopy').textContent='Copy dòng gửi anh',1200);
+  }catch{ alert(t); }
+});
+
+$('btnReset').addEventListener('click', ()=>{ location.reload(); });
+
+buildGuide();
+window.addEventListener('resize', checkFit);
+console.log('[GuidePreview] ready');
+</script>
+</body>
+</html>
